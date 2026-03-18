@@ -1,6 +1,8 @@
 """
 Flask web server for AI Gods World game.
 Exposes the game engine as REST API endpoints.
+
+Deployment: Auto-deployed from GitHub by Render.com
 """
 
 import os
