@@ -320,6 +320,7 @@ class Follower(Entity):
         self.add_component(FactionComponent(deity_id=deity_id))
         self.add_component(ResourceComponent(faith=10.0))
         self.add_component(StatsComponent())
+        self.add_component(PositionComponent())
 
 
 class Region(Entity):
