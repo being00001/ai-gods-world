@@ -5,8 +5,7 @@ Exposes the game engine as REST API endpoints.
 
 import os
 
-from flask import Flask, jsonify, request, render_template, send_from_directory
-from flask_wtf.csrf import CSRFProtect
+from flask import Flask, jsonify, request, render_template
 from .engine import GameEngine, GamePhase
 
 _project_root = os.path.join(os.path.dirname(__file__), os.pardir)
@@ -17,8 +16,6 @@ app = Flask(
     static_folder=os.path.join(_project_root, 'static'),
 )
 app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(32).hex())
-
-csrf = CSRFProtect(app)
 
 # Single shared game engine instance
 engine = GameEngine()

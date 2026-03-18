@@ -78,11 +78,13 @@ class GameState:
     
     def add_event(self, event_type: str, data: Dict[str, Any]) -> None:
         """Add an event to the log."""
+        import time as _time
         self._event_log.append({
             'turn': self.turn_info.turn_number,
             'tick': self.turn_info.tick_count,
             'type': event_type,
-            'data': data
+            'data': data,
+            'timestamp': _time.time()
         })
     
     def get_events(self, limit: int = 100) -> List[Dict[str, Any]]:

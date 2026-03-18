@@ -195,7 +195,7 @@ const ui = {
         if (playerDeity) {
             const resources = playerDeity.resources || {};
             
-            this.updateElement('resource-power', resources.power || 0);
+            this.updateElement('resource-power', resources.divine_power || 0);
             this.updateElement('resource-faith', resources.faith || 0);
             this.updateElement('resource-code', resources.code || 0);
             this.updateElement('resource-entropy', resources.entropy || 0);
