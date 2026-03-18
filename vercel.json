@@ -1,0 +1,13 @@
+{
+  "buildCommand": "pip install -r requirements.txt",
+  "outputDirectory": ".",
+  "framework": "flask",
+  "installCommand": "pip install -r requirements.txt",
+  "devCommand": "python -m game.web_server",
+  "routes": [
+    {
+      "src": "/(.*)",
+      "dest": "/game/web_server.py"
+    }
+  ]
+}
