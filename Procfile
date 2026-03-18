@@ -1,1 +1,1 @@
-web: python -m game.web_server
+web: gunicorn game.web_server:app
