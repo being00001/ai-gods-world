@@ -1,0 +1,6 @@
+# AI Gods World - Requirements
+# Install with: pip install -r requirements.txt
+
+flask>=3.0.0
+flask-wtf>=1.1.0
+wtforms>=3.0.0
