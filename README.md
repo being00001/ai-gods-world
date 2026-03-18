@@ -6,7 +6,9 @@ A strategic deity management game where you lead your god to dominance through d
 
 ## 🎮 Play Online
 
-**Web Version**: [ai-gods-world.onrender.com](https://ai-gods-world.onrender.com) *(Free hosting - may take a moment to wake up)*
+**Web Version (Demo)**: https://ai-gods-world.loca.lt *(Temporary demo - deploy to Render for permanent hosting)*
+
+**Deploy to Render**: See [Deployment](#-deployment) section below
 
 ## 📖 About
 
