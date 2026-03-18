@@ -44,16 +44,23 @@ pip install -r requirements.txt
 #### Running the CLI Game
 
 ```bash
-# Interactive mode
-python -m game.main
+# Clone the repository
+git clone https://github.com/being00001/ai-gods-world.git
+cd ai-gods-world
+
+# Install dependencies
+pip install -r requirements.txt
+
+# Interactive mode (set PYTHONPATH)
+PYTHONPATH=. python -m game.main
 
 # Automated test run (10 turns)
-python -m game.main --auto
+PYTHONPATH=. python -m game.main --auto
 
 # Single command mode
-python -m game.main --command recruit --args "central 3"
-python -m game.main --command balance
-python -m game.main --command world
+PYTHONPATH=. python -m game.main --command recruit --args "central 3"
+PYTHONPATH=. python -m game.main --command balance
+PYTHONPATH=. python -m game.main --command world
 ```
 
 #### CLI Commands
