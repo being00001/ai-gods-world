@@ -7,7 +7,7 @@ import os
 
 from flask import Flask, jsonify, request, render_template, send_from_directory
 from flask_wtf.csrf import CSRFProtect
-from game.engine import GameEngine, GamePhase
+from .engine import GameEngine, GamePhase
 
 _project_root = os.path.join(os.path.dirname(__file__), os.pardir)
 
