@@ -27,6 +27,21 @@ engine.initialize()
 PLAYER_DEITY = "oracle"
 
 
+def _payload():
+    """Parse JSON payload safely for legacy clients that may omit bodies."""
+    return request.get_json(silent=True) or {}
+
+
+def _resolve_deity_id(default: str = PLAYER_DEITY):
+    """Resolve deity_id from URL/query/body with a stable fallback."""
+    data = _payload()
+    return (
+        request.args.get('deity_id')
+        or data.get('deity_id')
+        or default
+    )
+
+
 @app.route('/')
 def index():
     return render_template('index.html')
@@ -35,6 +50,7 @@ def index():
 # ── Read-only endpoints ──────────────────────────────────────────────
 
 @app.route('/api/state')
+@app.route('/world', methods=['GET', 'POST'])
 def get_state():
     """Full world state."""
     world = engine.get_world_view()
@@ -47,7 +63,9 @@ def get_state():
 
 
 @app.route('/api/balance/<deity_id>')
-def get_balance(deity_id):
+@app.route('/balance', methods=['GET', 'POST'])
+def get_balance(deity_id=None):
+    deity_id = deity_id or _resolve_deity_id()
     balance = engine.get_balance(deity_id)
     if balance is None:
         return jsonify({'error': 'Deity not found'}), 404
@@ -55,12 +73,15 @@ def get_balance(deity_id):
 
 
 @app.route('/api/followers/<deity_id>')
-def get_followers(deity_id):
+@app.route('/followers', methods=['GET', 'POST'])
+def get_followers(deity_id=None):
+    deity_id = deity_id or _resolve_deity_id()
     followers = engine.get_followers_list(deity_id)
     return jsonify({'followers': followers})
 
 
 @app.route('/api/events')
+@app.route('/events')
 def get_events():
     limit = request.args.get('limit', 50, type=int)
     return jsonify({'events': engine.state.get_events(limit=limit)})
@@ -69,8 +90,9 @@ def get_events():
 # ── Action endpoints ─────────────────────────────────────────────────
 
 @app.route('/api/recruit', methods=['POST'])
+@app.route('/recruit', methods=['POST'])
 def recruit():
-    data = request.get_json(force=True)
+    data = _payload()
     result = engine.recruit_followers(
         deity_id=data.get('deity_id', PLAYER_DEITY),
         region_id=data.get('region_id', 'central'),
@@ -80,8 +102,9 @@ def recruit():
 
 
 @app.route('/api/attack', methods=['POST'])
+@app.route('/attack', methods=['POST'])
 def attack():
-    data = request.get_json(force=True)
+    data = _payload()
     result = engine.attack_target(
         attacker_deity_id=data.get('deity_id', PLAYER_DEITY),
         target_deity_id=data.get('target_deity_id', ''),
@@ -91,8 +114,9 @@ def attack():
 
 
 @app.route('/api/pray', methods=['POST'])
+@app.route('/pray', methods=['POST'])
 def pray():
-    data = request.get_json(force=True)
+    data = _payload()
     result = engine.pray(
         deity_id=data.get('deity_id', PLAYER_DEITY),
         prayer_type=data.get('prayer_type', 'faith'),
@@ -101,8 +125,9 @@ def pray():
 
 
 @app.route('/api/build', methods=['POST'])
+@app.route('/build', methods=['POST'])
 def build():
-    data = request.get_json(force=True)
+    data = _payload()
     result = engine.build_structure(
         deity_id=data.get('deity_id', PLAYER_DEITY),
         building_type=data.get('building_type', ''),
@@ -112,8 +137,9 @@ def build():
 
 
 @app.route('/api/miracle', methods=['POST'])
+@app.route('/miracle', methods=['POST'])
 def miracle():
-    data = request.get_json(force=True)
+    data = _payload()
     result = engine.perform_miracle(
         deity_id=data.get('deity_id', PLAYER_DEITY),
         region_id=data.get('region_id', ''),
@@ -124,6 +150,7 @@ def miracle():
 
 
 @app.route('/api/turn', methods=['POST'])
+@app.route('/turn', methods=['POST'])
 def advance_turn():
     engine.process_turn()
     world = engine.get_world_view()
