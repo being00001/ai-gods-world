@@ -3,11 +3,7 @@ Flask web server for AI Gods World game.
 Exposes the game engine as REST API endpoints.
 """
 
-import sys
 import os
-
-# Ensure parent directory is on path so we can import the game package
-sys.path.insert(0, os.path.dirname(os.path.dirname(os.path.abspath(__file__))))
 
 from flask import Flask, jsonify, request, render_template, send_from_directory
 from flask_wtf.csrf import CSRFProtect
