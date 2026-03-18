@@ -1,0 +1,232 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>AI Gods World - Deity Management</title>
+    <link rel="stylesheet" href="/static/style.css">
+</head>
+<body>
+    <div class="container">
+        <!-- Header -->
+        <header class="header">
+            <h1>🏛️ AI Gods World</h1>
+            <div class="header-info">
+                <span id="turn-display">Turn: 0</span>
+                <span id="deity-display">Playing as: Oracle</span>
+                <span id="phase-display">Phase: Playing</span>
+            </div>
+        </header>
+
+        <!-- Main Content -->
+        <main class="main-content">
+            <!-- Left Panel: Resources -->
+            <aside class="panel resources-panel">
+                <h2>⚡ Divine Resources</h2>
+                <div class="resource-list">
+                    <div class="resource-item">
+                        <span class="resource-label">Divine Power</span>
+                        <span class="resource-value" id="resource-power">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-label">Faith</span>
+                        <span class="resource-value" id="resource-faith">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-label">Code</span>
+                        <span class="resource-value" id="resource-code">0</span>
+                    </div>
+                    <div class="resource-item">
+                        <span class="resource-label">Entropy</span>
+                        <span class="resource-value" id="resource-entropy">0</span>
+                    </div>
+                </div>
+                
+                <div class="stats-section">
+                    <h3>📊 Your Stats</h3>
+                    <div class="stat-item">
+                        <span>Followers:</span>
+                        <span id="follower-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Buildings:</span>
+                        <span id="building-count">0</span>
+                    </div>
+                </div>
+
+                <div class="world-stats">
+                    <h3>🌍 World Overview</h3>
+                    <div class="stat-item">
+                        <span>Total Followers:</span>
+                        <span id="total-followers">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Deities:</span>
+                        <span id="deity-count">0</span>
+                    </div>
+                    <div class="stat-item">
+                        <span>Regions:</span>
+                        <span id="region-count">0</span>
+                    </div>
+                </div>
+            </aside>
+
+            <!-- Center Panel: Actions -->
+            <section class="panel actions-panel">
+                <h2>⚔️ Divine Actions</h2>
+                
+                <!-- Action Tabs -->
+                <div class="tabs">
+                    <button class="tab-btn active" data-tab="recruit">Recruit</button>
+                    <button class="tab-btn" data-tab="attack">Attack</button>
+                    <button class="tab-btn" data-tab="pray">Pray</button>
+                    <button class="tab-btn" data-tab="miracle">Miracle</button>
+                    <button class="tab-btn" data-tab="build">Build</button>
+                </div>
+
+                <!-- Tab Content -->
+                <div class="tab-content">
+                    <!-- Recruit Tab -->
+                    <div class="tab-pane active" id="tab-recruit">
+                        <h3>Recruit Followers</h3>
+                        <p class="description">Spend faith to recruit new followers to your divine cause.</p>
+                        <form id="recruit-form">
+                            <div class="form-group">
+                                <label for="recruit-region">Region:</label>
+                                <select id="recruit-region" required>
+                                    <option value="">Select region...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="recruit-count">Count (1-10):</label>
+                                <input type="number" id="recruit-count" min="1" max="10" value="1">
+                            </div>
+                            <div class="cost-info">Cost: <span id="recruit-cost">15</span> faith per follower</div>
+                            <button type="submit" class="action-btn recruit-btn">Recruit Followers</button>
+                        </form>
+                    </div>
+
+                    <!-- Attack Tab -->
+                    <div class="tab-pane" id="tab-attack">
+                        <h3>Launch Attack</h3>
+                        <p class="description">Attack another deity's followers in a region.</p>
+                        <form id="attack-form">
+                            <div class="form-group">
+                                <label for="attack-target">Target Deity:</label>
+                                <select id="attack-target" required>
+                                    <option value="">Select enemy...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="attack-region">Region:</label>
+                                <select id="attack-region" required>
+                                    <option value="">Select region...</option>
+                                </select>
+                            </div>
+                            <div class="cost-info">Cost: 30 Divine Power</div>
+                            <button type="submit" class="action-btn attack-btn">Launch Attack</button>
+                        </form>
+                    </div>
+
+                    <!-- Pray Tab -->
+                    <div class="tab-pane" id="tab-pray">
+                        <h3>Pray for Miracles</h3>
+                        <p class="description">Pray to gain divine resources based on your follower count.</p>
+                        <form id="pray-form">
+                            <div class="form-group">
+                                <label for="pray-type">Prayer Type:</label>
+                                <select id="pray-type" required>
+                                    <option value="faith">Faith (+faith)</option>
+                                    <option value="power">Divine Power (-20 faith, +power)</option>
+                                    <option value="code">Sacred Code (-30 faith, +code)</option>
+                                </select>
+                            </div>
+                            <div class="prayer-info" id="prayer-info">
+                                <p>Gain faith proportional to your followers</p>
+                            </div>
+                            <button type="submit" class="action-btn pray-btn">Pray</button>
+                        </form>
+                    </div>
+
+                    <!-- Miracle Tab -->
+                    <div class="tab-pane" id="tab-miracle">
+                        <h3>Perform Miracle</h3>
+                        <p class="description">Use divine power to perform miracles in a region.</p>
+                        <form id="miracle-form">
+                            <div class="form-group">
+                                <label for="miracle-region">Region:</label>
+                                <select id="miracle-region" required>
+                                    <option value="">Select region...</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="miracle-type">Miracle Type:</label>
+                                <select id="miracle-type" required>
+                                    <option value="abundance">Abundance</option>
+                                    <option value="healing">Healing</option>
+                                    <option value="protection">Protection</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="miracle-intensity">Intensity (1-10):</label>
+                                <input type="number" id="miracle-intensity" min="1" max="10" value="1">
+                            </div>
+                            <div class="cost-info">Cost: <span id="miracle-cost">10</span> Divine Power per intensity</div>
+                            <button type="submit" class="action-btn miracle-btn">Perform Miracle</button>
+                        </form>
+                    </div>
+
+                    <!-- Build Tab -->
+                    <div class="tab-pane" id="tab-build">
+                        <h3>Build Structure</h3>
+                        <p class="description">Construct buildings to strengthen your divine realm.</p>
+                        <form id="build-form">
+                            <div class="form-group">
+                                <label for="build-type">Building Type:</label>
+                                <select id="build-type" required>
+                                    <option value="">Select building...</option>
+                                    <option value="temple">Temple (50 power, 30 faith)</option>
+                                    <option value="seminary">Seminary (40 power, 40 faith)</option>
+                                    <option value="lab">Sacred Lab (60 power, 50 faith)</option>
+                                    <option value="arena">Arena (70 power, 40 faith)</option>
+                                    <option value="gateway">Portal Gateway (100 power, 80 faith, 20 code)</option>
+                                </select>
+                            </div>
+                            <div class="form-group">
+                                <label for="build-region">Region:</label>
+                                <select id="build-region" required>
+                                    <option value="">Select region...</option>
+                                </select>
+                            </div>
+                            <button type="submit" class="action-btn build-btn">Build Structure</button>
+                        </form>
+                    </div>
+                </div>
+
+                <!-- Turn Advance -->
+                <div class="turn-section">
+                    <button id="advance-turn-btn" class="turn-btn">⏭️ Advance Turn</button>
+                </div>
+            </section>
+
+            <!-- Right Panel: Events -->
+            <aside class="panel events-panel">
+                <h2>📜 Divine Chronicle</h2>
+                <div class="events-list" id="events-list">
+                    <div class="event-item system">Loading events...</div>
+                </div>
+            </aside>
+        </main>
+
+        <!-- Notification Area -->
+        <div id="notification" class="notification hidden"></div>
+
+        <!-- Footer -->
+        <footer class="footer">
+            <span>AI Gods World v1.0 - Deity Management Simulation</span>
+        </footer>
+    </div>
+
+    <script src="/static/app.js"></script>
+</body>
+</html>
