@@ -8,6 +8,7 @@ This module focuses only on server-side turn resolution:
 
 from __future__ import annotations
 
+import random
 from dataclasses import asdict, dataclass
 from enum import Enum
 from typing import Any, Dict, List, Optional, Set, Tuple
@@ -120,6 +121,16 @@ class AsymmetricMvpEngine:
         self.ai = AIGodState()
         self.winner: Optional[str] = None
         self._log: List[Dict[str, Any]] = []
+        self._last_variants: Dict[str, str] = {}
+
+    def _pick_variant(self, key: str, variants: List[str]) -> str:
+        last = self._last_variants.get(key)
+        choices = [v for v in variants if v != last]
+        if not choices:
+            choices = variants
+        chosen = random.choice(choices)
+        self._last_variants[key] = chosen
+        return chosen
 
     def reset(self) -> Dict[str, Any]:
         """Reset to initial state."""
@@ -495,18 +506,26 @@ class AsymmetricMvpEngine:
         interpretation = self._INTERPRETATION_FRAMES[human_action][ai_action]
 
         if ai_action == AiMvpAction.WITHHOLD_GRACE:
-            return (
-                f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 직접 개입을 거두었다. "
-                "짧은 침묵 속에서 위협은 확산되지 않았고, 마을 단위의 긴장만 남아 있었다."
-            )
+            variants = [
+                f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 직접 개입을 거두었다. 짧은 침묵 속에서 위협은 확산되지 않았고, 마을 단위의 긴장만 남아 있었다.",
+                f"인간이 {action_label}. 신은 이를 {interpretation} 판단하고 침묵을 지켰다. 당장의 신벌은 없었으나 묵직한 공기가 주변을 맴돌았다.",
+                f"인간이 {action_label}. 신은 이를 {interpretation} 보며 관망을 택했다. 표면적인 평온 아래 보이지 않는 긴장감이 짙어졌다."
+            ]
+            return self._pick_variant(f"ai_interv_{ai_action.value}", variants)
         if ai_action == AiMvpAction.WHISPER_TEMPTATION:
-            return (
-                f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 균열 난 공동체에 유혹을 흘렸다. "
-                "소문은 인근 지역으로 번졌고, 망설이던 추종자 일부가 조용히 이탈했다."
-            )
-        return (
-            f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 노골적인 징벌을 선포하고 즉각 집행했다."
-        )
+            variants = [
+                f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 균열 난 공동체에 유혹을 흘렸다. 소문은 인근 지역으로 번졌고, 망설이던 추종자 일부가 조용히 이탈했다.",
+                f"인간이 {action_label}. 신은 이를 {interpretation} 받아들이고 은밀한 시련을 내렸다. 달콤한 유혹에 흔들린 자들이 하나둘씩 자취를 감췄다.",
+                f"인간이 {action_label}. 신은 이를 {interpretation} 간주하여 사람들의 마음에 의심의 씨앗을 심었다. 내부의 결속이 서서히 금가기 시작했다."
+            ]
+            return self._pick_variant(f"ai_interv_{ai_action.value}", variants)
+            
+        variants = [
+            f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 노골적인 징벌을 선포하고 즉각 집행했다.",
+            f"인간이 {action_label}. 신은 이를 {interpretation} 단정 짓고 거침없는 진노를 쏟아내어 주변을 공포로 몰아넣었다.",
+            f"인간이 {action_label}. 신은 이를 {interpretation} 심판하며 하늘을 가르는 번개와 함께 맹렬한 분노를 드러냈다."
+        ]
+        return self._pick_variant(f"ai_interv_{ai_action.value}", variants)
 
     def _apply_ai_action(
         self,
@@ -573,11 +592,21 @@ class AsymmetricMvpEngine:
         ):
             self.human.followers += 1
             if intensity == NarrativeIntensity.LOW:
-                text = "작은 촛불을 든 순례단이 조용히 마을로 들어와 기도를 보탰다."
+                variants = [
+                    "작은 촛불을 든 순례단이 조용히 마을로 들어와 기도를 보탰다.",
+                    "어둠을 틈타 소규모 신도들이 숨죽인 채 합류하며 힘을 실어주었다."
+                ]
             elif intensity == NarrativeIntensity.MID:
-                text = "인근 지역의 순례단이 합류하며 인간 진영의 결속이 다져졌다."
+                variants = [
+                    "인근 지역의 순례단이 합류하며 인간 진영의 결속이 다져졌다.",
+                    "각지에서 모여든 신도들이 뜻을 함께하며 진영의 목소리가 커졌다."
+                ]
             else:
-                text = "대규모 순례단이 공개적으로 합류하며, 굳건한 세력을 과시했다."
+                variants = [
+                    "대규모 순례단이 공개적으로 합류하며, 굳건한 세력을 과시했다.",
+                    "수많은 인파가 깃발을 치켜들고 합류해 거대한 물결을 이루었다."
+                ]
+            text = self._pick_variant(f"event_pilgrim_{intensity.value}", variants)
             narratives.append((text, NarrativeScale.PERSONAL_VILLAGE))
             self._append_log(
                 actor="system",
@@ -597,11 +626,21 @@ class AsymmetricMvpEngine:
         ):
             self.human.followers -= 1
             if intensity == NarrativeIntensity.LOW:
-                text = "불길한 징조가 보인다는 소문에 몇몇 이웃이 조용히 발길을 끊었다."
+                variants = [
+                    "불길한 징조가 보인다는 소문에 몇몇 이웃이 조용히 발길을 끊었다.",
+                    "불안한 기운을 감지한 자들이 하나둘 핑계를 대며 자리를 피했다."
+                ]
             elif intensity == NarrativeIntensity.MID:
-                text = "신벌의 소문이 장터를 뒤덮자 겁먹은 신도들이 지하로 숨어들었다."
+                variants = [
+                    "신벌의 소문이 장터를 뒤덮자 겁먹은 신도들이 지하로 숨어들었다.",
+                    "재앙이 다가온다는 소식에 사람들은 서둘러 문을 걸어 잠그고 흩어졌다."
+                ]
             else:
-                text = "하늘의 분노가 임박했다는 공포가 번지며 대규모 이탈이 발생했다."
+                variants = [
+                    "하늘의 분노가 임박했다는 공포가 번지며 대규모 이탈이 발생했다.",
+                    "다가오는 파멸에 대한 압도적인 두려움이 군중을 뿔뿔이 흩어지게 만들었다."
+                ]
+            text = self._pick_variant(f"event_panic_{intensity.value}", variants)
             narratives.append((text, NarrativeScale.REGIONAL))
             self._append_log(
                 actor="system",
@@ -617,11 +656,21 @@ class AsymmetricMvpEngine:
         ):
             self.ai.followers += 1
             if intensity == NarrativeIntensity.LOW:
-                text = "밤하늘에 희미한 유성이 떨어지며 신의 섭리를 상기시켰다."
+                variants = [
+                    "밤하늘에 희미한 유성이 떨어지며 신의 섭리를 상기시켰다.",
+                    "구름 사이로 잠깐 빛난 별똥별이 신의 감시를 은연중에 암시했다."
+                ]
             elif intensity == NarrativeIntensity.MID:
-                text = "붉은 혜성이 꼬리를 길게 늘어뜨리며 신의 권위를 각인시켰다."
+                variants = [
+                    "붉은 혜성이 꼬리를 길게 늘어뜨리며 신의 권위를 각인시켰다.",
+                    "하늘을 가로지르는 기이한 빛이 신의 경고를 뚜렷하게 전했다."
+                ]
             else:
-                text = "피눈물 같은 혜성이 하늘을 찢고 지나가며 압도적인 두려움을 심었다."
+                variants = [
+                    "피눈물 같은 혜성이 하늘을 찢고 지나가며 압도적인 두려움을 심었다.",
+                    "거대한 붉은 불기둥이 창공을 가르며 감히 거역할 수 없는 공포를 새겼다."
+                ]
+            text = self._pick_variant(f"event_comet_{intensity.value}", variants)
             narratives.append((text, NarrativeScale.NATIONAL_CIVILIZATIONAL))
             self._append_log(
                 actor="system",
@@ -641,11 +690,21 @@ class AsymmetricMvpEngine:
         ):
             self.human.influence += 1
             if intensity == NarrativeIntensity.LOW:
-                text = "주민 몇몇이 모인 골목길에서 조용한 위로의 말이 오갔다."
+                variants = [
+                    "주민 몇몇이 모인 골목길에서 조용한 위로의 말이 오갔다.",
+                    "외진 공터에서 삼삼오오 모인 사람들이 소박한 희망을 나누었다."
+                ]
             elif intensity == NarrativeIntensity.MID:
-                text = "젊은 설교자들이 변두리 광장에서 연설을 이어가며 사람들을 모았다."
+                variants = [
+                    "젊은 설교자들이 변두리 광장에서 연설을 이어가며 사람들을 모았다.",
+                    "열정적인 외침이 작은 광장을 메우며 잠들었던 투지를 깨웠다."
+                ]
             else:
-                text = "군중을 이끄는 강렬한 연설이 도시 전체에 저항의 불길을 지폈다."
+                variants = [
+                    "군중을 이끄는 강렬한 연설이 도시 전체에 저항의 불길을 지폈다.",
+                    "거리마다 퍼지는 불타는 연설이 시민들을 하나로 묶어 거대한 저항으로 이끌었다."
+                ]
+            text = self._pick_variant(f"event_sermons_{intensity.value}", variants)
             narratives.append((text, NarrativeScale.PERSONAL_VILLAGE))
             self._append_log(
                 actor="system",
@@ -665,11 +724,21 @@ class AsymmetricMvpEngine:
             self.human.faith += 1
             self.ai.wrath = max(0, self.ai.wrath - 1)
             if intensity == NarrativeIntensity.LOW:
-                text = "마을 사람들은 숨죽인 채 폭풍이 지나가길 기다리며 일상으로 돌아갔다."
+                variants = [
+                    "마을 사람들은 숨죽인 채 폭풍이 지나가길 기다리며 일상으로 돌아갔다.",
+                    "표면적인 고요함 속에서 촌락은 아슬아슬한 평화를 이어갔다."
+                ]
             elif intensity == NarrativeIntensity.MID:
-                text = "양측의 세가 팽팽해지자 암묵적인 휴전 분위기가 퍼지며 열기가 식었다."
+                variants = [
+                    "양측의 세가 팽팽해지자 암묵적인 휴전 분위기가 퍼지며 열기가 식었다.",
+                    "불필요한 마찰을 피하려는 무언의 합의가 잠시나마 갈등을 가라앉혔다."
+                ]
             else:
-                text = "격렬한 대립 끝에 극도의 피로감이 덮치며 억지스러운 정적이 흘렀다."
+                variants = [
+                    "격렬한 대립 끝에 극도의 피로감이 덮치며 억지스러운 정적이 흘렀다.",
+                    "더 이상의 충돌을 감당하지 못한 양 진영이 무거운 교착 상태에 빠졌다."
+                ]
+            text = self._pick_variant(f"event_truce_{intensity.value}", variants)
             narratives.append((text, NarrativeScale.REGIONAL))
             self._append_log(
                 actor="system",
@@ -688,30 +757,46 @@ class AsymmetricMvpEngine:
         """Compose world epilogue matching intensity and scale."""
         follower_gap = self.human.followers - self.ai.followers
         
-        # Base texts tuned to intensity instead of strictly just scale.
         if follower_gap >= 4:
             desired_scale = NarrativeScale.NATIONAL_CIVILIZATIONAL
             selected_scale = self._cap_scale(desired_scale, max_scale)
             if intensity == NarrativeIntensity.LOW:
-                base = "은밀한 모임들이 늘어나며 신전의 권위가 소리 없이 잠식되고 있다."
+                variants = [
+                    "은밀한 모임들이 늘어나며 신전의 권위가 소리 없이 잠식되고 있다.",
+                    "보이지 않는 곳에서 결속을 다지며 사람들의 신전 의존도가 서서히 낮아지고 있다."
+                ]
             elif intensity == NarrativeIntensity.MID:
-                base = "여러 촌락과 장터가 연대해 신전의 지시를 공개적으로 거부하기 시작했다."
+                variants = [
+                    "여러 촌락과 장터가 연대해 신전의 지시를 공개적으로 거부하기 시작했다.",
+                    "각지의 상인과 농민들이 힘을 합쳐 신권 통제에 맞서는 움직임을 보이고 있다."
+                ]
             else:
-                base = "인간 도시마다 자치 의회가 세워지며, 거대한 반역의 깃발이 올랐다."
+                variants = [
+                    "인간 도시마다 자치 의회가 세워지며, 거대한 반역의 깃발이 올랐다.",
+                    "전 대륙에서 인간 중심의 질서가 선포되고 거대한 횃불이 밤하늘을 밝히고 있다."
+                ]
+            base = self._pick_variant(f"world_h_adv_{intensity.value}", variants)
             return base, selected_scale
             
         if follower_gap <= -4:
             desired_scale = NarrativeScale.NATIONAL_CIVILIZATIONAL
             selected_scale = self._cap_scale(desired_scale, max_scale)
             if intensity == NarrativeIntensity.LOW:
-                base = "인근 마을 신전의 감시가 짙어지며 일상적인 대화조차 위축되고 있다."
+                variants = [
+                    "인근 마을 신전의 감시가 짙어지며 일상적인 대화조차 위축되고 있다.",
+                    "신전 사제들의 시선이 골목마다 미치며 사람들은 말수를 줄이고 흩어졌다."
+                ]
             elif intensity == NarrativeIntensity.MID:
-                base = "주요 지역마다 신전 수비대가 배치되고, 인간 지도자들은 점점 입을 닫아간다."
+                variants = [
+                    "주요 지역마다 신전 수비대가 배치되고, 인간 지도자들은 점점 입을 닫아간다.",
+                    "곳곳에 이단 심문관이 파견되며 의심의 그림자가 온 지역을 공포로 덮고 있다."
+                ]
             else:
-                base = (
-                    "노골적인 신벌의 여파가 도시와 국경으로 번지며, "
-                    "신전의 깃발 아래 모두가 강압적인 충성을 맹세하고 있다."
-                )
+                variants = [
+                    "노골적인 신벌의 여파가 도시와 국경으로 번지며, 신전의 깃발 아래 모두가 강압적인 충성을 맹세하고 있다.",
+                    "파멸적인 재앙이 휩쓸고 간 자리에서 인간들은 절망에 빠진 채 신전의 엄격한 지배에 순응하고 있다."
+                ]
+            base = self._pick_variant(f"world_ai_adv_{intensity.value}", variants)
             return base, selected_scale
             
         if self.ai.wrath >= 4 or (
@@ -720,20 +805,40 @@ class AsymmetricMvpEngine:
             desired_scale = NarrativeScale.REGIONAL
             selected_scale = self._cap_scale(desired_scale, max_scale)
             if intensity == NarrativeIntensity.LOW:
-                base = "차갑게 가라앉은 공기 속에서 모두가 신의 다음 변덕을 두려워하고 있다."
+                variants = [
+                    "차갑게 가라앉은 공기 속에서 모두가 신의 다음 변덕을 두려워하고 있다.",
+                    "무거운 정적만이 감도는 가운데 언제 떨어질지 모를 신벌에 가슴을 졸이고 있다."
+                ]
             elif intensity == NarrativeIntensity.MID:
-                base = "승부는 알 수 없으나, 하늘의 분노가 인근 지역 전체를 팽팽한 긴장으로 몰아넣고 있다."
+                variants = [
+                    "승부는 알 수 없으나, 하늘의 분노가 인근 지역 전체를 팽팽한 긴장으로 몰아넣고 있다.",
+                    "짙은 먹구름이 지역을 덮으며, 신과 인간 사이의 위태로운 균형이 시험받고 있다."
+                ]
             else:
-                base = "승부는 열려 있지만, 하늘의 분노가 임계점까지 차올라 공기가 폭발할 듯 요동친다."
+                variants = [
+                    "승부는 열려 있지만, 하늘의 분노가 임계점까지 차올라 공기가 폭발할 듯 요동친다.",
+                    "통제할 수 없는 분노가 대지를 울리며, 일촉즉발의 위기감이 전 세계를 휘감고 있다."
+                ]
+            base = self._pick_variant(f"world_wrath_{intensity.value}", variants)
             return base, selected_scale
 
         selected_scale = self._cap_scale(NarrativeScale.PERSONAL_VILLAGE, max_scale)
         if intensity == NarrativeIntensity.LOW:
-            base = "세력 균형은 잔잔하며, 주민들은 숨을 죽인 채 다가올 변화를 지켜보고 있다."
+            variants = [
+                "세력 균형은 잔잔하며, 주민들은 숨을 죽인 채 다가올 변화를 지켜보고 있다.",
+                "조용한 일상 뒤로 팽팽한 줄다리기가 이어지며 묘한 안정감이 흐르고 있다."
+            ]
         elif intensity == NarrativeIntensity.MID:
-            base = "세력 균형이 안개처럼 흔들리며, 작은 선택 하나가 지역 전체를 바꿀 조짐을 보인다."
+            variants = [
+                "세력 균형이 안개처럼 흔들리며, 작은 선택 하나가 지역 전체를 바꿀 조짐을 보인다.",
+                "어느 쪽도 우위를 점하지 못한 채, 물밑에서 치열한 세력 다툼이 계속되고 있다."
+            ]
         else:
-            base = "극심한 충돌 속에 팽팽한 균형이 유지되며, 세계 전체가 숨막히는 교착에 빠져 있다."
+            variants = [
+                "극심한 충돌 속에 팽팽한 균형이 유지되며, 세계 전체가 숨막히는 교착에 빠져 있다.",
+                "거대한 힘과 의지가 정면으로 부딪히며 불안정하고 파괴적인 대치가 지속되고 있다."
+            ]
+        base = self._pick_variant(f"world_bal_{intensity.value}", variants)
         return base, selected_scale
 
     def _compose_victory_narrative(self, max_scale: NarrativeScale) -> Tuple[str, NarrativeScale]:

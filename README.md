@@ -124,11 +124,36 @@ ai-gods-world/
 
 ```bash
 cd ai-gods-world
-pip install -r requirements.txt
-python -m game.web_server
+python3 -m venv .venv
+./.venv/bin/pip install -r requirements.txt
+./.venv/bin/python -m game.web_server
 ```
 
 Then open http://localhost:5000 in your browser.
+
+### Frontend Build (npm)
+
+```bash
+cd ai-gods-world
+npm run build
+```
+
+This creates a `dist/` folder with:
+- `dist/index.html`
+- `dist/static/app.js`
+- `dist/static/style.css`
+
+To serve the built frontend preview:
+
+```bash
+npm run serve:frontend
+```
+
+To run backend API/web server via npm alias:
+
+```bash
+npm run serve:backend
+```
 
 ### API Endpoints
 

@@ -9,6 +9,7 @@ import os
 
 from flask import Flask, jsonify, request, render_template
 from .engine import GameEngine, GamePhase
+from .mvp_engine import AsymmetricMvpEngine
 
 _project_root = os.path.join(os.path.dirname(__file__), os.pardir)
 
@@ -22,6 +23,8 @@ app.config['SECRET_KEY'] = os.environ.get('SECRET_KEY', os.urandom(32).hex())
 # Single shared game engine instance
 engine = GameEngine()
 engine.initialize()
+mvp_engine = AsymmetricMvpEngine()
+mvp_engine.reset()
 
 # Default player deity
 PLAYER_DEITY = "oracle"
@@ -85,6 +88,48 @@ def get_followers(deity_id=None):
 def get_events():
     limit = request.args.get('limit', 50, type=int)
     return jsonify({'events': engine.state.get_events(limit=limit)})
+
+
+# ── Asymmetric 1v1 MVP endpoints (backend-only core loop) ───────────
+
+@app.route('/api/mvp/state')
+@app.route('/mvp/state')
+def get_mvp_state():
+    """Get 1v1 asymmetric MVP state with recent logs."""
+    limit = request.args.get('limit', 20, type=int)
+    return jsonify(
+        {
+            'state': mvp_engine.get_state(),
+            'logs': mvp_engine.get_logs(limit=limit),
+        }
+    )
+
+
+@app.route('/api/mvp/logs')
+@app.route('/mvp/logs')
+def get_mvp_logs():
+    """Get MVP logs only."""
+    limit = request.args.get('limit', 50, type=int)
+    return jsonify({'logs': mvp_engine.get_logs(limit=limit)})
+
+
+@app.route('/api/mvp/reset', methods=['POST'])
+@app.route('/mvp/reset', methods=['POST'])
+def reset_mvp():
+    """Reset the 1v1 asymmetric MVP engine."""
+    state = mvp_engine.reset()
+    return jsonify({'success': True, 'state': state, 'logs': mvp_engine.get_logs(limit=10)})
+
+
+@app.route('/api/mvp/turn', methods=['POST'])
+@app.route('/mvp/turn', methods=['POST'])
+def process_mvp_turn():
+    """Process one MVP turn (human action + AI response)."""
+    data = _payload()
+    action = data.get('action', '')
+    result = mvp_engine.process_turn(action)
+    status_code = 200 if result.get('success') else 400
+    return jsonify(result), status_code
 
 
 # ── Action endpoints ─────────────────────────────────────────────────
