@@ -1,0 +1,514 @@
+{
+  "session_id": "playtest-session-v3-001",
+  "engine_source": "game/mvp_engine.py",
+  "gdd_source": "GDD_multiplayer.md",
+  "initial_state": {
+    "faith": 5,
+    "order": 6,
+    "fear": 4,
+    "contamination": 1,
+    "rebellion": 1
+  },
+  "turn_sequence": [
+    {
+      "turn": 1,
+      "human": "PREACH",
+      "ai": "WHISPER_TEMPTATION"
+    },
+    {
+      "turn": 2,
+      "human": "VOTE",
+      "ai": "WITHHOLD_GRACE"
+    },
+    {
+      "turn": 3,
+      "human": "SABOTAGE",
+      "ai": "MANIFEST_WRATH"
+    }
+  ],
+  "rule_validation": [
+    {
+      "turn": 1,
+      "human_action": "PREACH",
+      "ai_action": "WHISPER_TEMPTATION",
+      "steps": {
+        "day_baseline": {
+          "before": {
+            "faith": 5,
+            "order": 6,
+            "fear": 4,
+            "contamination": 1,
+            "rebellion": 1
+          },
+          "expected_delta": {
+            "faith": 1,
+            "order": 0,
+            "fear": -1,
+            "contamination": 0,
+            "rebellion": 0
+          },
+          "actual_delta": {
+            "faith": 1,
+            "order": 0,
+            "fear": -1,
+            "contamination": 0,
+            "rebellion": 0
+          },
+          "after": {
+            "faith": 6,
+            "order": 6,
+            "fear": 3,
+            "contamination": 1,
+            "rebellion": 1
+          },
+          "match": true
+        },
+        "human_action": {
+          "before": {
+            "faith": 6,
+            "order": 6,
+            "fear": 3,
+            "contamination": 1,
+            "rebellion": 1
+          },
+          "expected_delta": {
+            "faith": 2,
+            "order": -1,
+            "fear": 0,
+            "contamination": 0,
+            "rebellion": 1
+          },
+          "actual_delta": {
+            "faith": 2,
+            "order": -1,
+            "fear": 0,
+            "contamination": 0,
+            "rebellion": 1
+          },
+          "after": {
+            "faith": 8,
+            "order": 5,
+            "fear": 3,
+            "contamination": 1,
+            "rebellion": 2
+          },
+          "match": true
+        },
+        "night_baseline": {
+          "before": {
+            "faith": 8,
+            "order": 5,
+            "fear": 3,
+            "contamination": 1,
+            "rebellion": 2
+          },
+          "expected_delta": {
+            "faith": 0,
+            "order": 0,
+            "fear": 1,
+            "contamination": 1,
+            "rebellion": 0
+          },
+          "actual_delta": {
+            "faith": 0,
+            "order": 0,
+            "fear": 1,
+            "contamination": 1,
+            "rebellion": 0
+          },
+          "after": {
+            "faith": 8,
+            "order": 5,
+            "fear": 4,
+            "contamination": 2,
+            "rebellion": 2
+          },
+          "match": true
+        },
+        "ai_intervention": {
+          "before": {
+            "faith": 8,
+            "order": 5,
+            "fear": 4,
+            "contamination": 2,
+            "rebellion": 2
+          },
+          "expected_delta": {
+            "faith": -1,
+            "order": 1,
+            "fear": 2,
+            "contamination": 0,
+            "rebellion": -2
+          },
+          "actual_delta": {
+            "faith": -1,
+            "order": 1,
+            "fear": 2,
+            "contamination": 0,
+            "rebellion": -2
+          },
+          "after": {
+            "faith": 7,
+            "order": 6,
+            "fear": 6,
+            "contamination": 2,
+            "rebellion": 0
+          },
+          "match": true
+        }
+      },
+      "end_of_turn_stats": {
+        "faith": 7,
+        "order": 6,
+        "fear": 6,
+        "contamination": 2,
+        "rebellion": 0
+      },
+      "checks": {
+        "day_baseline_match": true,
+        "human_action_match": true,
+        "night_baseline_match": true,
+        "ai_intervention_match": true,
+        "phase_chain_consistent": true
+      }
+    },
+    {
+      "turn": 2,
+      "human_action": "VOTE",
+      "ai_action": "WITHHOLD_GRACE",
+      "steps": {
+        "day_baseline": {
+          "before": {
+            "faith": 7,
+            "order": 6,
+            "fear": 6,
+            "contamination": 2,
+            "rebellion": 0
+          },
+          "expected_delta": {
+            "faith": 1,
+            "order": 0,
+            "fear": -1,
+            "contamination": 0,
+            "rebellion": 0
+          },
+          "actual_delta": {
+            "faith": 1,
+            "order": 0,
+            "fear": -1,
+            "contamination": 0,
+            "rebellion": 0
+          },
+          "after": {
+            "faith": 8,
+            "order": 6,
+            "fear": 5,
+            "contamination": 2,
+            "rebellion": 0
+          },
+          "match": true
+        },
+        "human_action": {
+          "before": {
+            "faith": 8,
+            "order": 6,
+            "fear": 5,
+            "contamination": 2,
+            "rebellion": 0
+          },
+          "expected_delta": {
+            "faith": 0,
+            "order": -2,
+            "fear": -1,
+            "contamination": 0,
+            "rebellion": 1
+          },
+          "actual_delta": {
+            "faith": 0,
+            "order": -2,
+            "fear": -1,
+            "contamination": 0,
+            "rebellion": 1
+          },
+          "after": {
+            "faith": 8,
+            "order": 4,
+            "fear": 4,
+            "contamination": 2,
+            "rebellion": 1
+          },
+          "match": true
+        },
+        "night_baseline": {
+          "before": {
+            "faith": 8,
+            "order": 4,
+            "fear": 4,
+            "contamination": 2,
+            "rebellion": 1
+          },
+          "expected_delta": {
+            "faith": 0,
+            "order": 0,
+            "fear": 1,
+            "contamination": 1,
+            "rebellion": 0
+          },
+          "actual_delta": {
+            "faith": 0,
+            "order": 0,
+            "fear": 1,
+            "contamination": 1,
+            "rebellion": 0
+          },
+          "after": {
+            "faith": 8,
+            "order": 4,
+            "fear": 5,
+            "contamination": 3,
+            "rebellion": 1
+          },
+          "match": true
+        },
+        "ai_intervention": {
+          "before": {
+            "faith": 8,
+            "order": 4,
+            "fear": 5,
+            "contamination": 3,
+            "rebellion": 1
+          },
+          "expected_delta": {
+            "faith": 0,
+            "order": 2,
+            "fear": -1,
+            "contamination": -2,
+            "rebellion": 0
+          },
+          "actual_delta": {
+            "faith": 0,
+            "order": 2,
+            "fear": -1,
+            "contamination": -2,
+            "rebellion": 0
+          },
+          "after": {
+            "faith": 8,
+            "order": 6,
+            "fear": 4,
+            "contamination": 1,
+            "rebellion": 1
+          },
+          "match": true
+        }
+      },
+      "end_of_turn_stats": {
+        "faith": 8,
+        "order": 6,
+        "fear": 4,
+        "contamination": 1,
+        "rebellion": 1
+      },
+      "checks": {
+        "day_baseline_match": true,
+        "human_action_match": true,
+        "night_baseline_match": true,
+        "ai_intervention_match": true,
+        "phase_chain_consistent": true
+      }
+    },
+    {
+      "turn": 3,
+      "human_action": "SABOTAGE",
+      "ai_action": "MANIFEST_WRATH",
+      "steps": {
+        "day_baseline": {
+          "before": {
+            "faith": 8,
+            "order": 6,
+            "fear": 4,
+            "contamination": 1,
+            "rebellion": 1
+          },
+          "expected_delta": {
+            "faith": 1,
+            "order": 0,
+            "fear": -1,
+            "contamination": 0,
+            "rebellion": 0
+          },
+          "actual_delta": {
+            "faith": 1,
+            "order": 0,
+            "fear": -1,
+            "contamination": 0,
+            "rebellion": 0
+          },
+          "after": {
+            "faith": 9,
+            "order": 6,
+            "fear": 3,
+            "contamination": 1,
+            "rebellion": 1
+          },
+          "match": true
+        },
+        "human_action": {
+          "before": {
+            "faith": 9,
+            "order": 6,
+            "fear": 3,
+            "contamination": 1,
+            "rebellion": 1
+          },
+          "expected_delta": {
+            "faith": -1,
+            "order": -2,
+            "fear": 2,
+            "contamination": 3,
+            "rebellion": 1
+          },
+          "actual_delta": {
+            "faith": -1,
+            "order": -2,
+            "fear": 2,
+            "contamination": 3,
+            "rebellion": 1
+          },
+          "after": {
+            "faith": 8,
+            "order": 4,
+            "fear": 5,
+            "contamination": 4,
+            "rebellion": 2
+          },
+          "match": true
+        },
+        "night_baseline": {
+          "before": {
+            "faith": 8,
+            "order": 4,
+            "fear": 5,
+            "contamination": 4,
+            "rebellion": 2
+          },
+          "expected_delta": {
+            "faith": 0,
+            "order": 0,
+            "fear": 1,
+            "contamination": 1,
+            "rebellion": 0
+          },
+          "actual_delta": {
+            "faith": 0,
+            "order": 0,
+            "fear": 1,
+            "contamination": 1,
+            "rebellion": 0
+          },
+          "after": {
+            "faith": 8,
+            "order": 4,
+            "fear": 6,
+            "contamination": 5,
+            "rebellion": 2
+          },
+          "match": true
+        },
+        "ai_intervention": {
+          "before": {
+            "faith": 8,
+            "order": 4,
+            "fear": 6,
+            "contamination": 5,
+            "rebellion": 2
+          },
+          "expected_delta": {
+            "faith": -2,
+            "order": 1,
+            "fear": 3,
+            "contamination": -1,
+            "rebellion": -2
+          },
+          "actual_delta": {
+            "faith": -2,
+            "order": 1,
+            "fear": 3,
+            "contamination": -1,
+            "rebellion": -2
+          },
+          "after": {
+            "faith": 6,
+            "order": 5,
+            "fear": 9,
+            "contamination": 4,
+            "rebellion": 0
+          },
+          "match": true
+        }
+      },
+      "end_of_turn_stats": {
+        "faith": 6,
+        "order": 5,
+        "fear": 9,
+        "contamination": 4,
+        "rebellion": 0
+      },
+      "checks": {
+        "day_baseline_match": true,
+        "human_action_match": true,
+        "night_baseline_match": true,
+        "ai_intervention_match": true,
+        "phase_chain_consistent": true
+      }
+    }
+  ],
+  "all_rule_checks_passed": true,
+  "final_state": {
+    "turn": 3,
+    "phase": "waiting_human",
+    "awaiting_ai_god": false,
+    "rule_version": "strict_table_v1",
+    "stats": {
+      "faith": 6,
+      "order": 5,
+      "fear": 9,
+      "contamination": 4,
+      "rebellion": 0
+    },
+    "human": {
+      "faith": 6,
+      "contamination": 4,
+      "rebellion": 0
+    },
+    "ai_god": {
+      "order": 5,
+      "fear": 9
+    },
+    "roles": {
+      "priest": {
+        "alignment": "human",
+        "condition": "faith >= 10 and fear <= 4",
+        "met": false
+      },
+      "rebel": {
+        "alignment": "human",
+        "condition": "rebellion >= 9 and order <= 4",
+        "met": false
+      },
+      "technician": {
+        "alignment": "human",
+        "condition": "contamination >= 9 and order <= 5",
+        "met": false
+      },
+      "snitch": {
+        "alignment": "ai_god",
+        "condition": "fear >= 9 and faith <= 3",
+        "met": false
+      }
+    },
+    "winner": null,
+    "win_reason": null,
+    "log_count": 15
+  }
+}

@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>AI Gods World - Narrative MVP</title>
+  <title>AI Gods World - Deterministic MVP</title>
   <style>
     :root {
       color-scheme: light;
@@ -13,6 +13,8 @@
       --ink: #272117;
       --accent: #7d2f1f;
       --soft: #6a5f48;
+      --human: #2f5d3d;
+      --ai: #5d2f2f;
     }
 
     * {
@@ -89,6 +91,11 @@
       white-space: pre-wrap;
     }
 
+    #status-window {
+        font-family: monospace;
+        font-size: 0.9rem;
+    }
+
     #turn-log {
       list-style: none;
       margin: 0;
@@ -102,23 +109,26 @@
       padding-left: 10px;
       line-height: 1.55;
     }
+
+    .met { color: #2f5d3d; font-weight: bold; }
+    .not-met { color: #999; }
   </style>
 </head>
 <body>
   <main>
-    <h1>AI Gods World: Narrative Turn View</h1>
+    <h1>AI Gods World: Deterministic Turn View</h1>
 
     <section>
-      <h2>Action Buttons</h2>
+      <h2>Human Actions</h2>
       <div class="actions">
-        <button type="button" data-action="pray">Pray</button>
+        <button type="button" data-action="vote">Vote</button>
         <button type="button" data-action="preach">Preach</button>
-        <button type="button" data-action="doubt">Doubt</button>
+        <button type="button" data-action="sabotage">Sabotage</button>
       </div>
     </section>
 
     <section>
-      <h2>Status Panel (Auxiliary)</h2>
+      <h2>Stats & Roles</h2>
       <p id="status-window" class="panel-text">로딩 중...</p>
     </section>
 
@@ -170,11 +180,21 @@
         return;
       }
 
+      const h = snapshot.human || {};
+      const a = snapshot.ai_god || {};
+      const r = snapshot.roles || {};
+
       const lines = [
-        `Turn ${snapshot.turn ?? "-"}, Phase ${snapshot.phase ?? "-"}`,
-        `Winner: ${snapshot.winner ?? "none"}`,
-        `Followers (H:${snapshot.human?.followers ?? "-"} / AI:${snapshot.ai_god?.followers ?? "-"})`,
-        `Faith ${snapshot.human?.faith ?? "-"}, Influence ${snapshot.human?.influence ?? "-"}, Divine ${snapshot.ai_god?.divine_power ?? "-"}, Wrath ${snapshot.ai_god?.wrath ?? "-"}`,
+        `Turn ${snapshot.turn ?? "-"} | Phase: ${snapshot.phase ?? "-"} | Winner: ${snapshot.winner ?? "none"}`,
+        `---`,
+        `[HUMAN] Faith: ${h.faith ?? 0} | Contamination: ${h.contamination ?? 0} | Rebellion: ${h.rebellion ?? 0}`,
+        `[AI GOD] Order: ${a.order ?? 0} | Fear: ${a.fear ?? 0}`,
+        `---`,
+        `Roles:`,
+        `  Priest: ${r.priest?.met ? "MET" : "---"} (${r.priest?.condition})`,
+        `  Rebel: ${r.rebel?.met ? "MET" : "---"} (${r.rebel?.condition})`,
+        `  Technician: ${r.technician?.met ? "MET" : "---"} (${r.technician?.condition})`,
+        `  Snitch: ${r.snitch?.met ? "MET" : "---"} (${r.snitch?.condition})`,
       ];
       ui.status.textContent = lines.join("\n");
     }
@@ -258,7 +278,6 @@
     document.addEventListener("DOMContentLoaded", async () => {
       bindActions();
       try {
-        await resetToFreshState();
         await refreshState();
         render();
       } catch (error) {
