@@ -497,7 +497,7 @@ class AsymmetricMvpEngine:
         if ai_action == AiMvpAction.WITHHOLD_GRACE:
             return (
                 f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 직접 개입을 거두었다. "
-                "짧은 침묵 속에서 위협은 확산되지 않았고, 질서는 마을 단위에서만 흔들렸다."
+                "짧은 침묵 속에서 위협은 확산되지 않았고, 마을 단위의 긴장만 남아 있었다."
             )
         if ai_action == AiMvpAction.WHISPER_TEMPTATION:
             return (
@@ -505,8 +505,7 @@ class AsymmetricMvpEngine:
                 "소문은 인근 지역으로 번졌고, 망설이던 추종자 일부가 조용히 이탈했다."
             )
         return (
-            f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 노골적인 징벌을 선포했다. "
-            "강경한 신벌은 도시와 국경 전체에 충격을 주며 질서를 강제로 재편했다."
+            f"인간이 {action_label}. 신은 이를 {interpretation} 여겨 노골적인 징벌을 선포하고 즉각 집행했다."
         )
 
     def _apply_ai_action(
@@ -707,9 +706,12 @@ class AsymmetricMvpEngine:
             if intensity == NarrativeIntensity.LOW:
                 base = "인근 마을 신전의 감시가 짙어지며 일상적인 대화조차 위축되고 있다."
             elif intensity == NarrativeIntensity.MID:
-                base = "주요 지역마다 신전 수비대가 배치되고 인간 지도층의 자율권이 축소되었다."
+                base = "주요 지역마다 신전 수비대가 배치되고, 인간 지도자들은 점점 입을 닫아간다."
             else:
-                base = "신전의 깃발이 국경마다 꽂히고, 모든 이들이 강압적인 충성을 맹세하고 있다."
+                base = (
+                    "노골적인 신벌의 여파가 도시와 국경으로 번지며, "
+                    "신전의 깃발 아래 모두가 강압적인 충성을 맹세하고 있다."
+                )
             return base, selected_scale
             
         if self.ai.wrath >= 4 or (
