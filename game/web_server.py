@@ -97,9 +97,12 @@ def get_events():
 def get_mvp_state():
     """Get 1v1 asymmetric MVP state with recent logs."""
     limit = request.args.get('limit', 20, type=int)
+    state = mvp_engine.get_state()
     return jsonify(
         {
-            'state': mvp_engine.get_state(),
+            'phase': state['phase'],
+            'awaiting_ai_god': state['awaiting_ai_god'],
+            'state': state,
             'logs': mvp_engine.get_logs(limit=limit),
         }
     )
@@ -123,16 +126,46 @@ def reset_mvp():
 
 @app.route('/api/mvp/turn', methods=['POST'])
 @app.route('/mvp/turn', methods=['POST'])
-def process_mvp_turn():
-    """Process one MVP turn (human action + AI response)."""
+@app.route('/api/mvp/human_action', methods=['POST'])
+@app.route('/mvp/human_action', methods=['POST'])
+def process_mvp_human_action():
+    """Process the human half-turn and move to WAITING_AI_GOD."""
     data = _payload()
     action = data.get('action', '')
-    result = mvp_engine.process_turn(action)
+    result = mvp_engine.process_human_action(action)
     status_code = 200 if result.get('success') else 400
     return jsonify(result), status_code
 
 
-# ── Action endpoints ─────────────────────────────────────────────────
+@app.route('/api/mvp/intervene', methods=['POST'])
+@app.route('/mvp/intervene', methods=['POST'])
+def process_mvp_ai_intervention():
+    """Process AI intervention half-turn and complete the current turn."""
+    data = _payload()
+    action = data.get('action', '')
+    result = mvp_engine.process_ai_intervention(action)
+    status_code = 200 if result.get('success') else 400
+    return jsonify(result), status_code
+
+
+# ── Specialized MVP actions ──────────────────────────────────────────
+
+@app.route('/api/mvp/vote', methods=['POST'])
+def mvp_vote():
+    return jsonify(mvp_engine.process_human_action('vote'))
+
+
+@app.route('/api/mvp/preach', methods=['POST'])
+def mvp_preach():
+    return jsonify(mvp_engine.process_human_action('preach'))
+
+
+@app.route('/api/mvp/sabotage', methods=['POST'])
+def mvp_sabotage():
+    return jsonify(mvp_engine.process_human_action('sabotage'))
+
+
+# ── Action endpoints (Legacy) ────────────────────────────────────────
 
 @app.route('/api/recruit', methods=['POST'])
 @app.route('/recruit', methods=['POST'])
