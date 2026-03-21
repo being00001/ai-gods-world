@@ -25,6 +25,7 @@ class MvpAction(Enum):
     VOTE = "vote"
     PREACH = "preach"
     SABOTAGE = "sabotage"
+    RECRUIT = "recruit"
 
 
 class NarrativeIntensity(Enum):
@@ -62,6 +63,8 @@ class HumanState:
 class AIGodState:
     order: int = 6
     fear: int = 4
+    authority: int = 6
+    divine_power: int = 8
 
 
 class AsymmetricMvpEngine:
@@ -70,6 +73,8 @@ class AsymmetricMvpEngine:
     MAX_TURNS = 20
     STAT_MIN = 0
     STAT_MAX = 12
+    DIVINE_POWER_MIN = -2
+    DIVINE_POWER_MAX = 12
 
     _INTENSITY_ORDER = {
         NarrativeIntensity.LOW: 0,
@@ -97,6 +102,7 @@ class AsymmetricMvpEngine:
             "fear": -1,
             "contamination": 0,
             "rebellion": 0,
+            "divine_power": 0,  # Authority-based regen handled in process_human_action
         },
         "night": {
             "faith": 0,
@@ -130,6 +136,13 @@ class AsymmetricMvpEngine:
             "contamination": 3,
             "rebellion": 1,
         },
+        MvpAction.RECRUIT: {
+            "faith": 1,
+            "order": -1,
+            "fear": 0,
+            "contamination": 0,
+            "rebellion": 1,
+        },
     }
 
     # AI interventions (Night)
@@ -157,10 +170,17 @@ class AsymmetricMvpEngine:
         },
     }
 
+    _AI_ACTION_COSTS = {
+        AiMvpAction.WITHHOLD_GRACE: 1,
+        AiMvpAction.WHISPER_TEMPTATION: 2,
+        AiMvpAction.MANIFEST_WRATH: 4,
+    }
+
     _HUMAN_ACTION_INTENSITY = {
         MvpAction.VOTE: NarrativeIntensity.LOW,
         MvpAction.PREACH: NarrativeIntensity.MID,
         MvpAction.SABOTAGE: NarrativeIntensity.HIGH,
+        MvpAction.RECRUIT: NarrativeIntensity.LOW,
     }
 
     _AI_ACTION_INTENSITY = {
@@ -189,6 +209,7 @@ class AsymmetricMvpEngine:
         MvpAction.VOTE: "The town vote challenges the AI order and raises overt dissent.",
         MvpAction.PREACH: "The sermon builds faith and mobilizes a louder resistance.",
         MvpAction.SABOTAGE: "A sabotage strike injects contamination and shakes institutional control.",
+        MvpAction.RECRUIT: "A link-based recruitment campaign expands the circle of the enlightened.",
     }
 
     _AI_NARRATIVES = {
@@ -208,6 +229,8 @@ class AsymmetricMvpEngine:
 
         self._log: List[Dict[str, Any]] = []
         self._pending_turn: Optional[Dict[str, Any]] = None
+        self.vulnerable: bool = False
+        self.next_turn_modifiers: Dict[str, int] = {}
 
         # Kept for compatibility with existing helper scripts.
         self._variant_history: Dict[str, List[str]] = {}
@@ -227,14 +250,24 @@ class AsymmetricMvpEngine:
     def get_state(self) -> Dict[str, Any]:
         """Return current state snapshot."""
         role_status = self._evaluate_role_conditions()
+        human_state = asdict(self.human)
+        ai_state = asdict(self.ai)
+
+        # Backward-compatible aliases for older UI/debug scripts.
+        human_state.setdefault("followers", human_state["faith"])
+        human_state.setdefault("influence", human_state["rebellion"])
+        ai_state.setdefault("followers", ai_state["order"])
+        ai_state.setdefault("wrath", ai_state["fear"])
+
         return {
             "turn": self.turn,
             "phase": self.phase.value,
             "awaiting_ai_god": self.phase == MvpPhase.WAITING_AI_GOD,
             "rule_version": "strict_table_v1",
             "stats": self._current_stats(),
-            "human": asdict(self.human),
-            "ai_god": asdict(self.ai),
+            "human": human_state,
+            "ai_god": ai_state,
+            "vulnerable": self.vulnerable,
             "roles": role_status,
             "winner": self.winner,
             "win_reason": self.win_reason,
@@ -259,12 +292,22 @@ class AsymmetricMvpEngine:
         if action is None:
             return {
                 "success": False,
-                "error": f"Invalid action: {human_action}. Use vote|preach|sabotage",
+                "error": f"Invalid action: {human_action}. Use vote|preach|sabotage|recruit",
             }
 
         self.turn += 1
+        rebellion_boost = self.next_turn_modifiers.pop("rebellion_boost", 0)
+        if rebellion_boost:
+            self._apply_stat_delta("rebellion", rebellion_boost)
 
         day_delta = self._apply_delta_table(self._CYCLE_DELTAS["day"])
+        
+        # Authority-based Divine Power recovery: Authority 4-7: +1, 8-11: +2, 12: +3
+        dp_recovery = self.ai.authority // 4
+        if dp_recovery > 0:
+            self._apply_stat_delta("divine_power", dp_recovery)
+            day_delta["divine_power"] = day_delta.get("divine_power", 0) + dp_recovery
+
         self._append_log(
             actor="system",
             action="day",
@@ -332,6 +375,17 @@ class AsymmetricMvpEngine:
         action = self._parse_ai_action(ai_action)
         if action is None:
             return {"success": False, "error": f"Invalid AI action: {ai_action}"}
+        if self.vulnerable and action == AiMvpAction.MANIFEST_WRATH:
+            return {
+                "success": False,
+                "error": "AI God is vulnerable and cannot use manifest_wrath",
+            }
+        taboo_manifest_wrath = (
+            action == AiMvpAction.MANIFEST_WRATH and self.human.rebellion < 3
+        )
+        taboo_withhold_grace = (
+            action == AiMvpAction.WITHHOLD_GRACE and self.human.faith < 3
+        )
 
         human_action: MvpAction = self._pending_turn["human_action"]
         human_narrative: str = self._pending_turn["human_narrative"]
@@ -346,18 +400,45 @@ class AsymmetricMvpEngine:
             narrative=self._CYCLE_NARRATIVES["night"],
         )
 
+        authority_bloom_order_bonus = 0
+        if self.ai.authority >= 10:
+            self._apply_stat_delta("order", 1)
+            authority_bloom_order_bonus = 1
+
         ai_delta = self._apply_delta_table(self._AI_ACTION_DELTAS[action])
+        ai_cost = self._AI_ACTION_COSTS[action]
+        self._apply_stat_delta("divine_power", -ai_cost)
+        self._update_overextension()
+
+        taboo_penalty_applied = taboo_manifest_wrath or taboo_withhold_grace
+        taboo_authority_penalty = 0
+        if taboo_penalty_applied:
+            self._apply_stat_delta("authority", -2)
+            taboo_authority_penalty = -2
+
         ai_narrative = self._AI_NARRATIVES[action]
         ai_intensity = self._AI_ACTION_INTENSITY[action]
         ai_scale = self._max_scale_for_intensity(ai_intensity)
+
+        # Doctrine Alignment: Order 8 (+/- 1), Fear 4 (+/- 1) -> +1 Authority
+        # This is the "doctrine-based recovery" suggested by OpenClaw.
+        doctrine_alignment_bonus = 0
+        if abs(self.ai.order - 8) <= 1 and abs(self.ai.fear - 4) <= 1:
+            self._apply_stat_delta("authority", 1)
+            doctrine_alignment_bonus = 1
 
         self._append_log(
             actor="ai_god",
             action=action.value,
             details={
                 "delta": ai_delta,
+                "divine_power_cost": ai_cost,
                 "intensity": ai_intensity.value,
                 "scale": ai_scale.value,
+                "authority_bloom_order_bonus": authority_bloom_order_bonus,
+                "taboo_authority_penalty": taboo_authority_penalty,
+                "taboo_violation": taboo_penalty_applied,
+                "doctrine_alignment_bonus": doctrine_alignment_bonus,
             },
             narrative=ai_narrative,
         )
@@ -436,6 +517,10 @@ class AsymmetricMvpEngine:
 
     def _choose_default_ai_action(self) -> AiMvpAction:
         """Deterministic AI fallback for process_turn convenience."""
+        if self.vulnerable:
+            if self.human.faith >= 8:
+                return AiMvpAction.WHISPER_TEMPTATION
+            return AiMvpAction.WITHHOLD_GRACE
         if self.human.contamination >= 8 or self.human.rebellion >= 8:
             return AiMvpAction.MANIFEST_WRATH
         if self.human.faith >= 8:
@@ -469,7 +554,7 @@ class AsymmetricMvpEngine:
         for stat, amount in delta_table.items():
             self._apply_stat_delta(stat, amount)
         after = self._current_stats()
-        return {key: after[key] - before[key] for key in before}
+        return {key: after[key] - before[key] for key in delta_table}
 
     def _apply_stat_delta(self, stat: str, amount: int) -> None:
         if stat == "faith":
@@ -482,15 +567,39 @@ class AsymmetricMvpEngine:
             self.ai.order = self._clamp(self.ai.order + amount)
         elif stat == "fear":
             self.ai.fear = self._clamp(self.ai.fear + amount)
+        elif stat == "authority":
+            self.ai.authority = self._clamp(self.ai.authority + amount)
+        elif stat == "divine_power":
+            self.ai.divine_power = self._clamp_divine_power(self.ai.divine_power + amount)
 
     def _current_stats(self) -> Dict[str, int]:
         return {
             "faith": self.human.faith,
             "order": self.ai.order,
             "fear": self.ai.fear,
+            "authority": self.ai.authority,
+            "divine_power": self.ai.divine_power,
             "contamination": self.human.contamination,
             "rebellion": self.human.rebellion,
         }
+
+    def _update_overextension(self) -> None:
+        was_vulnerable = self.vulnerable
+        self.vulnerable = self.ai.divine_power < 0
+        if self.vulnerable:
+            self.next_turn_modifiers["rebellion_boost"] = 2
+        else:
+            self.next_turn_modifiers.pop("rebellion_boost", None)
+        if self.vulnerable and not was_vulnerable:
+            self._append_log(
+                actor="system",
+                action="overextension",
+                details={
+                    "vulnerable": True,
+                    "divine_power": self.ai.divine_power,
+                },
+                narrative="The AI God overextends divine reserves and becomes vulnerable.",
+            )
 
     def _evaluate_role_conditions(self) -> Dict[str, Dict[str, Any]]:
         priest_met = self.human.faith >= 10 and self.ai.fear <= 4
@@ -692,6 +801,10 @@ class AsymmetricMvpEngine:
     @classmethod
     def _clamp(cls, value: int) -> int:
         return max(cls.STAT_MIN, min(cls.STAT_MAX, value))
+
+    @classmethod
+    def _clamp_divine_power(cls, value: int) -> int:
+        return max(cls.DIVINE_POWER_MIN, min(cls.DIVINE_POWER_MAX, value))
 
     @classmethod
     def _intensity_rank(cls, intensity: NarrativeIntensity) -> int:
