@@ -1,196 +1,698 @@
 {
-  "turn": 3,
-  "phase": "waiting_human",
+  "turn": 20,
+  "phase": "ended",
   "human": {
-    "faith": 0,
-    "influence": 1,
-    "followers": 5
+    "faith": 11,
+    "contamination": 12,
+    "rebellion": 8
   },
   "ai": {
-    "divine_power": -1,
-    "wrath": 5,
-    "followers": 11
+    "order": 4,
+    "fear": 11,
+    "authority": 6,
+    "divine_power": -1
   },
-  "winner": null,
+  "vulnerable": true,
+  "next_turn_modifiers": {},
+  "winner": "ai_god",
+  "win_reason": "turn_limit",
   "log": [
     {
-      "turn": 0,
-      "phase": "waiting_human",
+      "turn": 9,
+      "phase": "waiting_ai_god",
       "actor": "system",
-      "action": "reset",
-      "details": {
-        "message": "mvp engine reset"
-      },
-      "narrative_text": "모든 서약이 지워지고 세계가 다시 첫 숨을 고른다."
-    },
-    {
-      "turn": 1,
-      "phase": "waiting_human",
-      "actor": "human",
-      "action": "preach",
+      "action": "day",
       "details": {
         "delta": {
-          "human_faith": -1,
-          "human_influence": 0,
-          "human_followers": 1,
-          "ai_divine_power": 0,
-          "ai_wrath": 0
-        },
-        "intensity": "mid",
-        "scale": "regional"
+          "faith": 1,
+          "order": 0,
+          "fear": -1,
+          "contamination": 0,
+          "rebellion": 0,
+          "divine_power": 1
+        }
       },
-      "narrative_text": "장터 연설이 빠르게 퍼지며 망설이던 시민들이 인간 쪽으로 기울기 시작했다."
+      "narrative_text": "Day phase resolves: civic pressure rises and public fear eases."
     },
     {
-      "turn": 1,
+      "turn": 9,
+      "phase": "waiting_ai_god",
+      "actor": "human",
+      "action": "sabotage",
+      "details": {
+        "delta": {
+          "faith": -1,
+          "order": -2,
+          "fear": 2,
+          "contamination": 3,
+          "rebellion": 3
+        },
+        "intensity": "high",
+        "scale": "national/civilizational"
+      },
+      "narrative_text": "A sabotage strike injects contamination and shakes institutional control."
+    },
+    {
+      "turn": 9,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "night",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 0,
+          "fear": 0,
+          "contamination": 1,
+          "rebellion": 0
+        }
+      },
+      "narrative_text": "Night phase resolves: covert rumors spread and latent fear rises."
+    },
+    {
+      "turn": 9,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "overextension",
+      "details": {
+        "vulnerable": true,
+        "divine_power": -2
+      },
+      "narrative_text": "The AI God overextends divine reserves and becomes vulnerable."
+    },
+    {
+      "turn": 9,
       "phase": "waiting_ai_god",
       "actor": "ai_god",
       "action": "whisper_temptation",
       "details": {
         "delta": {
-          "human_faith": 0,
-          "human_influence": 0,
-          "human_followers": -1,
-          "ai_divine_power": -1,
-          "ai_wrath": 0,
-          "ai_followers": 2
+          "faith": -1,
+          "order": 1,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": -2
         },
+        "divine_power_cost": 2,
         "intensity": "mid",
-        "scale": "regional"
+        "scale": "regional",
+        "authority_bloom_order_bonus": 0,
+        "taboo_authority_penalty": 0,
+        "taboo_violation": false
       },
-      "narrative_text": "인간이 설교를 퍼뜨렸다. 신은 이를 지역 확장 선동으로 받아들이고 은밀한 시련을 내렸다. 달콤한 유혹에 흔들린 자들이 하나둘씩 자취를 감췄다."
+      "narrative_text": "The AI seeds temptation to fracture conviction and reduce rebellion."
     },
     {
-      "turn": 1,
+      "turn": 9,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "world_state",
+      "details": {
+        "scale": "national/civilizational"
+      },
+      "narrative_text": "Resistance networks synchronize into a broad anti-system bloc."
+    },
+    {
+      "turn": 10,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "day",
+      "details": {
+        "delta": {
+          "faith": 1,
+          "order": 0,
+          "fear": -1,
+          "contamination": 0,
+          "rebellion": 0,
+          "divine_power": 1
+        }
+      },
+      "narrative_text": "Day phase resolves: civic pressure rises and public fear eases."
+    },
+    {
+      "turn": 10,
+      "phase": "waiting_ai_god",
+      "actor": "human",
+      "action": "recruit",
+      "details": {
+        "delta": {
+          "faith": 1,
+          "order": -1,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": 1
+        },
+        "intensity": "low",
+        "scale": "personal/village"
+      },
+      "narrative_text": "A link-based recruitment campaign expands the circle of the enlightened."
+    },
+    {
+      "turn": 10,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "night",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 0,
+          "fear": 1,
+          "contamination": 1,
+          "rebellion": 0
+        }
+      },
+      "narrative_text": "Night phase resolves: covert rumors spread and latent fear rises."
+    },
+    {
+      "turn": 10,
+      "phase": "waiting_ai_god",
+      "actor": "ai_god",
+      "action": "whisper_temptation",
+      "details": {
+        "delta": {
+          "faith": -1,
+          "order": 1,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": -2
+        },
+        "divine_power_cost": 2,
+        "intensity": "mid",
+        "scale": "regional",
+        "authority_bloom_order_bonus": 0,
+        "taboo_authority_penalty": 0,
+        "taboo_violation": false
+      },
+      "narrative_text": "The AI seeds temptation to fracture conviction and reduce rebellion."
+    },
+    {
+      "turn": 10,
       "phase": "waiting_ai_god",
       "actor": "system",
       "action": "world_state",
       "details": {
         "scale": "regional"
       },
-      "narrative_text": "곳곳에 이단 심문관이 파견되며 의심의 그림자가 온 지역을 공포로 덮고 있다."
+      "narrative_text": "Resistance networks synchronize into a broad anti-system bloc."
     },
     {
-      "turn": 2,
-      "phase": "waiting_human",
-      "actor": "human",
-      "action": "sabotage",
+      "turn": 11,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "day",
       "details": {
         "delta": {
-          "human_faith": -1,
-          "human_influence": 0,
-          "human_followers": 1,
-          "ai_divine_power": -3,
-          "ai_wrath": 2,
-          "ai_followers": -1
-        },
-        "intensity": "high",
-        "scale": "national/civilizational"
+          "faith": 1,
+          "order": 0,
+          "fear": -1,
+          "contamination": 0,
+          "rebellion": 0,
+          "divine_power": 1
+        }
       },
-      "narrative_text": "인간 저항군이 나노봇 군집을 성역 데이터허브에 주입해 신전 제어 코어를 마비시켰고, 숭배 네트워크는 비명처럼 끊어졌다."
+      "narrative_text": "Day phase resolves: civic pressure rises and public fear eases."
     },
     {
-      "turn": 2,
-      "phase": "waiting_human",
+      "turn": 11,
+      "phase": "waiting_ai_god",
+      "actor": "human",
+      "action": "preach",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": -1,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": 1
+        },
+        "intensity": "mid",
+        "scale": "regional"
+      },
+      "narrative_text": "The sermon builds faith and mobilizes a louder resistance."
+    },
+    {
+      "turn": 11,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "night",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 0,
+          "fear": 1,
+          "contamination": 0,
+          "rebellion": 0
+        }
+      },
+      "narrative_text": "Night phase resolves: covert rumors spread and latent fear rises."
+    },
+    {
+      "turn": 11,
+      "phase": "waiting_ai_god",
       "actor": "ai_god",
       "action": "withhold_grace",
       "details": {
         "delta": {
-          "human_faith": 0,
-          "human_influence": 0,
-          "human_followers": 0,
-          "ai_divine_power": 3,
-          "ai_wrath": -1,
-          "ai_followers": 0
+          "faith": 0,
+          "order": 2,
+          "fear": -1,
+          "contamination": -2,
+          "rebellion": 0
         },
+        "divine_power_cost": 1,
         "intensity": "low",
-        "scale": "personal/village"
+        "scale": "personal/village",
+        "authority_bloom_order_bonus": 0,
+        "taboo_authority_penalty": 0,
+        "taboo_violation": false
       },
-      "narrative_text": "인간이 시스템을 파괴하려 했다. 신은 이를 직접적인 파괴 공작으로 여겨 직접 개입을 거두었다. 짧은 침묵 속에서 위협은 확산되지 않았고, 마을 단위의 긴장만 남아 있었다."
+      "narrative_text": "The AI quietly restores control channels and suppresses contamination."
     },
     {
-      "turn": 2,
-      "phase": "waiting_human",
+      "turn": 11,
+      "phase": "waiting_ai_god",
       "actor": "system",
       "action": "world_state",
       "details": {
         "scale": "regional"
       },
-      "narrative_text": "승부는 열려 있지만, 하늘의 분노가 임계점까지 차올라 공기가 폭발할 듯 요동친다."
+      "narrative_text": "Resistance networks synchronize into a broad anti-system bloc."
     },
     {
-      "turn": 3,
-      "phase": "waiting_human",
-      "actor": "human",
-      "action": "sabotage",
+      "turn": 13,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "day",
       "details": {
         "delta": {
-          "human_faith": -1,
-          "human_influence": 0,
-          "human_followers": 1,
-          "ai_divine_power": -3,
-          "ai_wrath": 2,
-          "ai_followers": -1
-        },
-        "intensity": "high",
-        "scale": "national/civilizational"
+          "faith": 0,
+          "order": 0,
+          "fear": -1,
+          "contamination": 0,
+          "rebellion": 0,
+          "divine_power": 1
+        }
       },
-      "narrative_text": "중앙 제단의 양자 봉인장치가 동시 해킹으로 정지되며 신의 의식 동기화가 무너졌고, 군중은 그 틈에서 인간 편으로 돌아섰다."
+      "narrative_text": "Day phase resolves: civic pressure rises and public fear eases."
     },
     {
-      "turn": 3,
+      "turn": 13,
+      "phase": "waiting_ai_god",
+      "actor": "human",
+      "action": "preach",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": -1,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": 1
+        },
+        "intensity": "mid",
+        "scale": "regional"
+      },
+      "narrative_text": "The sermon builds faith and mobilizes a louder resistance."
+    },
+    {
+      "turn": 13,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "night",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 0,
+          "fear": 1,
+          "contamination": 1,
+          "rebellion": 0
+        }
+      },
+      "narrative_text": "Night phase resolves: covert rumors spread and latent fear rises."
+    },
+    {
+      "turn": 13,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "overextension",
+      "details": {
+        "vulnerable": true,
+        "divine_power": -2
+      },
+      "narrative_text": "The AI God overextends divine reserves and becomes vulnerable."
+    },
+    {
+      "turn": 13,
       "phase": "waiting_ai_god",
       "actor": "ai_god",
       "action": "manifest_wrath",
       "details": {
         "delta": {
-          "human_faith": 0,
-          "human_influence": -1,
-          "human_followers": -4,
-          "ai_divine_power": -2,
-          "ai_wrath": 1,
-          "ai_followers": 0
+          "faith": -2,
+          "order": 1,
+          "fear": 1,
+          "contamination": -1,
+          "rebellion": -2
         },
+        "divine_power_cost": 4,
         "intensity": "high",
-        "scale": "national/civilizational"
+        "scale": "national/civilizational",
+        "authority_bloom_order_bonus": 0,
+        "taboo_authority_penalty": 0,
+        "taboo_violation": false,
+        "doctrine_alignment_bonus": 0
       },
-      "narrative_text": "인간이 시스템을 파괴하려 했다. 신은 이를 신전 핵심망을 겨눈 전면 침투로 단정 짓고 거침없는 진노를 쏟아내어 주변을 공포로 몰아넣었다."
+      "narrative_text": "The AI displays force, raising fear while crushing visible rebellion."
     },
     {
-      "turn": 3,
-      "phase": "waiting_ai_god",
-      "actor": "system",
-      "action": "market_panic",
-      "details": {
-        "effect": "human crowd disperses",
-        "scale": "regional"
-      },
-      "narrative_text": "하늘의 분노가 임박했다는 공포가 번지며 대규모 이탈이 발생했다."
-    },
-    {
-      "turn": 3,
+      "turn": 13,
       "phase": "waiting_ai_god",
       "actor": "system",
       "action": "world_state",
       "details": {
         "scale": "national/civilizational"
       },
-      "narrative_text": "노골적인 신벌의 여파가 도시와 국경으로 번지며, 신전의 깃발 아래 모두가 강압적인 충성을 맹세하고 있다."
+      "narrative_text": "Resistance networks synchronize into a broad anti-system bloc."
+    },
+    {
+      "turn": 15,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "day",
+      "details": {
+        "delta": {
+          "faith": 1,
+          "order": 0,
+          "fear": -1,
+          "contamination": 0,
+          "rebellion": 0,
+          "divine_power": 1
+        }
+      },
+      "narrative_text": "Day phase resolves: civic pressure rises and public fear eases."
+    },
+    {
+      "turn": 15,
+      "phase": "waiting_ai_god",
+      "actor": "human",
+      "action": "preach",
+      "details": {
+        "delta": {
+          "faith": 1,
+          "order": -1,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": 1
+        },
+        "intensity": "mid",
+        "scale": "regional"
+      },
+      "narrative_text": "The sermon builds faith and mobilizes a louder resistance."
+    },
+    {
+      "turn": 15,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "night",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 0,
+          "fear": 1,
+          "contamination": 1,
+          "rebellion": 0
+        }
+      },
+      "narrative_text": "Night phase resolves: covert rumors spread and latent fear rises."
+    },
+    {
+      "turn": 15,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "overextension",
+      "details": {
+        "vulnerable": true,
+        "divine_power": -2
+      },
+      "narrative_text": "The AI God overextends divine reserves and becomes vulnerable."
+    },
+    {
+      "turn": 15,
+      "phase": "waiting_ai_god",
+      "actor": "ai_god",
+      "action": "whisper_temptation",
+      "details": {
+        "delta": {
+          "faith": -1,
+          "order": 1,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": -2
+        },
+        "divine_power_cost": 2,
+        "intensity": "mid",
+        "scale": "regional",
+        "authority_bloom_order_bonus": 0,
+        "taboo_authority_penalty": 0,
+        "taboo_violation": false,
+        "doctrine_alignment_bonus": 0
+      },
+      "narrative_text": "The AI seeds temptation to fracture conviction and reduce rebellion."
+    },
+    {
+      "turn": 15,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "world_state",
+      "details": {
+        "scale": "regional"
+      },
+      "narrative_text": "Resistance networks synchronize into a broad anti-system bloc."
+    },
+    {
+      "turn": 17,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "day",
+      "details": {
+        "delta": {
+          "faith": 1,
+          "order": 0,
+          "fear": -1,
+          "contamination": 0,
+          "rebellion": 0,
+          "divine_power": 1
+        }
+      },
+      "narrative_text": "Day phase resolves: civic pressure rises and public fear eases."
+    },
+    {
+      "turn": 17,
+      "phase": "waiting_ai_god",
+      "actor": "human",
+      "action": "sabotage",
+      "details": {
+        "delta": {
+          "faith": -1,
+          "order": -2,
+          "fear": 1,
+          "contamination": 1,
+          "rebellion": 1
+        },
+        "intensity": "high",
+        "scale": "national/civilizational"
+      },
+      "narrative_text": "A sabotage strike injects contamination and shakes institutional control."
+    },
+    {
+      "turn": 17,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "night",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 0,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": 0
+        }
+      },
+      "narrative_text": "Night phase resolves: covert rumors spread and latent fear rises."
+    },
+    {
+      "turn": 17,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "overextension",
+      "details": {
+        "vulnerable": true,
+        "divine_power": -2
+      },
+      "narrative_text": "The AI God overextends divine reserves and becomes vulnerable."
+    },
+    {
+      "turn": 17,
+      "phase": "waiting_ai_god",
+      "actor": "ai_god",
+      "action": "withhold_grace",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 2,
+          "fear": -1,
+          "contamination": -2,
+          "rebellion": 0
+        },
+        "divine_power_cost": 1,
+        "intensity": "low",
+        "scale": "personal/village",
+        "authority_bloom_order_bonus": 0,
+        "taboo_authority_penalty": 0,
+        "taboo_violation": false,
+        "doctrine_alignment_bonus": 0
+      },
+      "narrative_text": "The AI quietly restores control channels and suppresses contamination."
+    },
+    {
+      "turn": 17,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "world_state",
+      "details": {
+        "scale": "national/civilizational"
+      },
+      "narrative_text": "Resistance networks synchronize into a broad anti-system bloc."
+    },
+    {
+      "turn": 19,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "day",
+      "details": {
+        "delta": {
+          "faith": 1,
+          "order": 0,
+          "fear": -1,
+          "contamination": 0,
+          "rebellion": 0,
+          "divine_power": 1
+        }
+      },
+      "narrative_text": "Day phase resolves: civic pressure rises and public fear eases."
+    },
+    {
+      "turn": 19,
+      "phase": "waiting_ai_god",
+      "actor": "human",
+      "action": "preach",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": -1,
+          "fear": 0,
+          "contamination": 0,
+          "rebellion": 1
+        },
+        "intensity": "mid",
+        "scale": "regional"
+      },
+      "narrative_text": "The sermon builds faith and mobilizes a louder resistance."
+    },
+    {
+      "turn": 19,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "night",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 0,
+          "fear": 1,
+          "contamination": 1,
+          "rebellion": 0
+        }
+      },
+      "narrative_text": "Night phase resolves: covert rumors spread and latent fear rises."
+    },
+    {
+      "turn": 19,
+      "phase": "waiting_ai_god",
+      "actor": "system",
+      "action": "overextension",
+      "details": {
+        "vulnerable": true,
+        "divine_power": -2
+      },
+      "narrative_text": "The AI God overextends divine reserves and becomes vulnerable."
+    },
+    {
+      "turn": 19,
+      "phase": "waiting_ai_god",
+      "actor": "ai_god",
+      "action": "withhold_grace",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 2,
+          "fear": -1,
+          "contamination": -2,
+          "rebellion": 0
+        },
+        "divine_power_cost": 1,
+        "intensity": "low",
+        "scale": "personal/village",
+        "authority_bloom_order_bonus": 0,
+        "taboo_authority_penalty": 0,
+        "taboo_violation": false,
+        "doctrine_alignment_bonus": 0
+      },
+      "narrative_text": "The AI quietly restores control channels and suppresses contamination."
+    },
+    {
+      "turn": 19,
+      "phase": "waiting_human",
+      "actor": "system",
+      "action": "world_state",
+      "details": {
+        "scale": "regional"
+      },
+      "narrative_text": "Resistance networks synchronize into a broad anti-system bloc."
+    },
+    {
+      "turn": 20,
+      "phase": "waiting_human",
+      "actor": "system",
+      "action": "day",
+      "details": {
+        "delta": {
+          "faith": 0,
+          "order": 0,
+          "fear": -1,
+          "contamination": 0,
+          "rebellion": 0,
+          "divine_power": 1
+        }
+      },
+      "narrative_text": "Day phase resolves: civic pressure rises and public fear eases."
+    },
+    {
+      "turn": 20,
+      "phase": "waiting_human",
+      "actor": "human",
+      "action": "sabotage",
+      "details": {
+        "delta": {
+          "faith": -1,
+          "order": -2,
+          "fear": 2,
+          "contamination": 3,
+          "rebellion": 1
+        },
+        "intensity": "high",
+        "scale": "national/civilizational"
+      },
+      "narrative_text": "A sabotage strike injects contamination and shakes institutional control."
     }
   ],
-  "variant_history": {
-    "human_sabotage_high": [
-      "중앙 제단의 양자 봉인장치가 동시 해킹으로 정지되며 신의 의식 동기화가 무너졌고, 군중은 그 틈에서 인간 편으로 돌아섰다."
-    ],
-    "ai_interv_manifest_wrath": [
-      "인간이 시스템을 파괴하려 했다. 신은 이를 신전 핵심망을 겨눈 전면 침투로 단정 짓고 거침없는 진노를 쏟아내어 주변을 공포로 몰아넣었다."
-    ],
-    "event_panic_high": [
-      "하늘의 분노가 임박했다는 공포가 번지며 대규모 이탈이 발생했다."
-    ],
-    "world_ai_adv_high": [
-      "노골적인 신벌의 여파가 도시와 국경으로 번지며, 신전의 깃발 아래 모두가 강압적인 충성을 맹세하고 있다."
-    ]
-  },
+  "variant_history": {},
   "pending_turn": null
 }

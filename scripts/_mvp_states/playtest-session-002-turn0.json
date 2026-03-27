@@ -1,0 +1,22 @@
+{
+  "turn": 0,
+  "phase": "waiting_human",
+  "human": {
+    "faith": 5,
+    "contamination": 1,
+    "rebellion": 1
+  },
+  "ai": {
+    "order": 6,
+    "fear": 4,
+    "authority": 6,
+    "divine_power": 8
+  },
+  "vulnerable": false,
+  "next_turn_modifiers": {},
+  "winner": null,
+  "win_reason": null,
+  "log": [],
+  "variant_history": {},
+  "pending_turn": null
+}

@@ -1,0 +1,32 @@
+{
+  "schema": "worker_manifest_v1",
+  "name": "game_qa_tester",
+  "purpose": "AI Gods World 게임 QA 및 플레이 테스트 전문 워커",
+  "scope": [
+    "Perform deterministic gameplay QA for Day/Night turn processing using GDD_multiplayer.md rules.",
+    "Run browser simulation and CLI playthrough tests for quest progression, stat transitions, and regressions.",
+    "Report bugs with reproduction steps, expected vs actual behavior, severity, and gameplay impact.",
+    "Validate UI/UX interaction flows and identify friction or broken states.",
+    "Provide pass or block recommendations for tested scope before handoff."
+  ],
+  "key_capabilities": [
+    "AI Gods World 게임 QA 및 플레이 테스트 전문 워커",
+    "웹 브라우저 시뮬레이션",
+    "게임 플레이 테스트",
+    "버그 리포트 작성",
+    "UI/UX 검증",
+    "게임 밸런스 분석",
+    "CLI 인터페이스 테스트",
+    "엔드투엔드 플레이 스루"
+  ],
+  "skill_paths": [
+    ".claude/skills/game-qa-tester-runtime/SKILL.md"
+  ],
+  "runtime_notes": [
+    "Run QA commands from /home/upopo/workspace/projects/ai-gods-world for stable path resolution.",
+    "Start with targeted reproduction for the active turn and phase, then run end-to-end regression checks.",
+    "Capture issue evidence as command or input, observed output, expected output, and severity.",
+    "Use GDD_multiplayer.md as the deterministic source of truth when validating outcomes."
+  ],
+  "build_version": 1
+}

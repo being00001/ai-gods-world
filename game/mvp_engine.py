@@ -26,6 +26,7 @@ class MvpAction(Enum):
     PREACH = "preach"
     SABOTAGE = "sabotage"
     RECRUIT = "recruit"
+    REPORT = "report"  # Snitch-exclusive action
 
 
 class NarrativeIntensity(Enum):
@@ -143,6 +144,13 @@ class AsymmetricMvpEngine:
             "contamination": 0,
             "rebellion": 1,
         },
+        MvpAction.REPORT: {
+            "faith": -1,
+            "order": 1,
+            "fear": 1,
+            "contamination": 0,
+            "rebellion": -1,
+        },
     }
 
     # AI interventions (Night)
@@ -181,6 +189,7 @@ class AsymmetricMvpEngine:
         MvpAction.PREACH: NarrativeIntensity.MID,
         MvpAction.SABOTAGE: NarrativeIntensity.HIGH,
         MvpAction.RECRUIT: NarrativeIntensity.LOW,
+        MvpAction.REPORT: NarrativeIntensity.LOW,
     }
 
     _AI_ACTION_INTENSITY = {
@@ -192,6 +201,7 @@ class AsymmetricMvpEngine:
     _LEGACY_HUMAN_ACTION_ALIASES = {
         "pray": MvpAction.VOTE,
         "doubt": MvpAction.SABOTAGE,
+        "snitch": MvpAction.REPORT,
     }
 
     _LEGACY_AI_ACTION_ALIASES = {
@@ -210,6 +220,7 @@ class AsymmetricMvpEngine:
         MvpAction.PREACH: "The sermon builds faith and mobilizes a louder resistance.",
         MvpAction.SABOTAGE: "A sabotage strike injects contamination and shakes institutional control.",
         MvpAction.RECRUIT: "A link-based recruitment campaign expands the circle of the enlightened.",
+        MvpAction.REPORT: "A loyalist reports suspicious activity, strengthening control and seeding fear.",
     }
 
     _AI_NARRATIVES = {
@@ -242,8 +253,8 @@ class AsymmetricMvpEngine:
         self._append_log(
             actor="system",
             action="reset",
-            details={"rule_version": "strict_table_v1"},
-            narrative="The deterministic rule table is active.",
+            details={"rule_version": "strict_table_v1.1"},
+            narrative="The deterministic rule table (v1.1) is active.",
         )
         return self.get_state()
 
@@ -253,17 +264,11 @@ class AsymmetricMvpEngine:
         human_state = asdict(self.human)
         ai_state = asdict(self.ai)
 
-        # Backward-compatible aliases for older UI/debug scripts.
-        human_state.setdefault("followers", human_state["faith"])
-        human_state.setdefault("influence", human_state["rebellion"])
-        ai_state.setdefault("followers", ai_state["order"])
-        ai_state.setdefault("wrath", ai_state["fear"])
-
         return {
             "turn": self.turn,
             "phase": self.phase.value,
             "awaiting_ai_god": self.phase == MvpPhase.WAITING_AI_GOD,
-            "rule_version": "strict_table_v1",
+            "rule_version": "strict_table_v1.1",
             "stats": self._current_stats(),
             "human": human_state,
             "ai_god": ai_state,
@@ -292,7 +297,7 @@ class AsymmetricMvpEngine:
         if action is None:
             return {
                 "success": False,
-                "error": f"Invalid action: {human_action}. Use vote|preach|sabotage|recruit",
+                "error": f"Invalid action: {human_action}. Use vote|preach|sabotage|recruit|report",
             }
 
         self.turn += 1
@@ -302,8 +307,8 @@ class AsymmetricMvpEngine:
 
         day_delta = self._apply_delta_table(self._CYCLE_DELTAS["day"])
         
-        # Authority-based Divine Power recovery: Authority 4-7: +1, 8-11: +2, 12: +3
-        dp_recovery = self.ai.authority // 4
+        # Authority-based Divine Power recovery (v1.1): Auth // 3 (Min 1 if Auth > 0)
+        dp_recovery = max(1 if self.ai.authority > 0 else 0, self.ai.authority // 3)
         if dp_recovery > 0:
             self._apply_stat_delta("divine_power", dp_recovery)
             day_delta["divine_power"] = day_delta.get("divine_power", 0) + dp_recovery
@@ -315,7 +320,15 @@ class AsymmetricMvpEngine:
             narrative=self._CYCLE_NARRATIVES["day"],
         )
 
-        human_delta = self._apply_delta_table(self._HUMAN_ACTION_DELTAS[action])
+        # Apply Intimidation Leverage synergy for REPORT
+        action_deltas = self._HUMAN_ACTION_DELTAS[action].copy()
+        synergy_applied = False
+        if action == MvpAction.REPORT and self.ai.fear >= 6:
+            action_deltas["order"] += 1
+            action_deltas["fear"] += 1
+            synergy_applied = True
+
+        human_delta = self._apply_delta_table(action_deltas)
         human_narrative = self._HUMAN_NARRATIVES[action]
         human_intensity = self._HUMAN_ACTION_INTENSITY[action]
         human_scale = self._max_scale_for_intensity(human_intensity)
@@ -327,6 +340,7 @@ class AsymmetricMvpEngine:
                 "delta": human_delta,
                 "intensity": human_intensity.value,
                 "scale": human_scale.value,
+                "synergy_applied": synergy_applied,
             },
             narrative=human_narrative,
         )
@@ -380,6 +394,7 @@ class AsymmetricMvpEngine:
                 "success": False,
                 "error": "AI God is vulnerable and cannot use manifest_wrath",
             }
+        
         taboo_manifest_wrath = (
             action == AiMvpAction.MANIFEST_WRATH and self.human.rebellion < 3
         )
@@ -421,7 +436,6 @@ class AsymmetricMvpEngine:
         ai_scale = self._max_scale_for_intensity(ai_intensity)
 
         # Doctrine Alignment: Order 8 (+/- 1), Fear 4 (+/- 1) -> +1 Authority
-        # This is the "doctrine-based recovery" suggested by OpenClaw.
         doctrine_alignment_bonus = 0
         if abs(self.ai.order - 8) <= 1 and abs(self.ai.fear - 4) <= 1:
             self._apply_stat_delta("authority", 1)
@@ -495,18 +509,6 @@ class AsymmetricMvpEngine:
                     "ai_intervention": None,
                     "minor_events": [],
                     "world_state": self._compose_victory_narrative(self._max_scale_for_intensity(NarrativeIntensity.MID))[0],
-                },
-                "narrative_tone": {
-                    "human_action_intensity": result.get("human_intensity"),
-                    "ai_action_intensity": None,
-                    "max_turn_intensity": result.get("human_intensity"),
-                    "max_epilogue_scale": self._max_scale_for_intensity(NarrativeIntensity.MID).value,
-                },
-                "epilogue_scales": {
-                    "human_consequence": self._max_scale_for_intensity(NarrativeIntensity.MID).value,
-                    "ai_intervention": None,
-                    "minor_events": [],
-                    "world_state": self._max_scale_for_intensity(NarrativeIntensity.MID).value,
                 },
                 "state": self.get_state(),
                 "logs": self.get_logs(limit=10),

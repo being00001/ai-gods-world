@@ -7,6 +7,7 @@ DAY_BASELINE_DELTA = {
     "faith": 1,
     "order": 0,
     "fear": -1,
+    "divine_power": 1,
     "contamination": 0,
     "rebellion": 0,
 }
@@ -60,6 +61,16 @@ ALL_DELTA_TABLES = (
                 "rebellion": 1,
             },
         ),
+        (
+            "recruit",
+            {
+                "faith": 1,
+                "order": -1,
+                "fear": 0,
+                "contamination": 0,
+                "rebellion": 1,
+            },
+        ),
     ],
 )
 def test_day_and_human_action_deltas_match_rule_table(human_action, expected_delta):
@@ -78,6 +89,29 @@ def test_day_and_human_action_deltas_match_rule_table(human_action, expected_del
 
     assert day_log["details"]["delta"] == DAY_BASELINE_DELTA
     assert human_log["details"]["delta"] == expected_delta
+
+
+def test_recruit_action_has_specific_deterministic_delta():
+    engine = DeterministicEngine()
+
+    result = engine.process_human_action("recruit")
+
+    assert result["success"] is True
+    assert result["phase"] == "waiting_ai_god"
+
+    logs = engine.get_logs(limit=10)
+    recruit_log = next(log for log in logs if log["actor"] == "human" and log["action"] == "recruit")
+
+    assert recruit_log["details"]["delta"] == {
+        "faith": 1,
+        "order": -1,
+        "fear": 0,
+        "contamination": 0,
+        "rebellion": 1,
+    }
+    assert recruit_log["narrative_text"] == (
+        "A link-based recruitment campaign expands the circle of the enlightened."
+    )
 
 
 @pytest.mark.parametrize(
@@ -132,18 +166,44 @@ def test_night_and_ai_action_deltas_match_rule_table(ai_action, expected_delta):
     assert ai_log["details"]["delta"] == expected_delta
 
 
-def _set_stats(engine, *, faith, order, fear, contamination, rebellion):
+def _set_stats(
+    engine,
+    *,
+    faith,
+    order,
+    fear,
+    contamination,
+    rebellion,
+    authority=6,
+    divine_power=8,
+):
     engine.human.faith = faith
     engine.ai.order = order
     engine.ai.fear = fear
+    engine.ai.authority = authority
+    engine.ai.divine_power = divine_power
     engine.human.contamination = contamination
     engine.human.rebellion = rebellion
 
 
 def _assert_stats_are_clamped(engine):
     stats = engine.get_state()["stats"]
-    assert set(stats.keys()) == {"faith", "order", "fear", "contamination", "rebellion"}
-    assert all(0 <= value <= 12 for value in stats.values())
+    assert set(stats.keys()) == {
+        "faith",
+        "order",
+        "fear",
+        "authority",
+        "divine_power",
+        "contamination",
+        "rebellion",
+    }
+    assert 0 <= stats["faith"] <= 12
+    assert 0 <= stats["order"] <= 12
+    assert 0 <= stats["fear"] <= 12
+    assert 0 <= stats["authority"] <= 12
+    assert -2 <= stats["divine_power"] <= 12
+    assert 0 <= stats["contamination"] <= 12
+    assert 0 <= stats["rebellion"] <= 12
 
 
 @pytest.mark.parametrize("boundary_value", [0, 12])
@@ -158,10 +218,23 @@ def test_stat_clamping_keeps_all_core_stats_in_range_for_every_delta_table(bound
             fear=boundary_value,
             contamination=boundary_value,
             rebellion=boundary_value,
+            authority=boundary_value,
+            divine_power=boundary_value,
         )
 
         engine._apply_delta_table(delta_table)
         _assert_stats_are_clamped(engine)
+
+
+def test_divine_power_clamps_to_extended_range():
+    engine = DeterministicEngine()
+    engine.ai.divine_power = 8
+
+    engine._apply_stat_delta("divine_power", -99)
+    assert engine.ai.divine_power == -2
+
+    engine._apply_stat_delta("divine_power", 99)
+    assert engine.ai.divine_power == 12
 
 
 @pytest.mark.parametrize(
@@ -398,3 +471,51 @@ def test_snitch_objective_ends_game_immediately_after_human_step():
     ai_result = engine.process_ai_intervention("withhold_grace")
     assert ai_result["success"] is False
     assert ai_result["error"] == "Game is in phase ended"
+
+
+@pytest.mark.parametrize(
+    "ai_action, expected_cost",
+    [
+        ("withhold_grace", 1),
+        ("whisper_temptation", 2),
+        ("manifest_wrath", 4),
+    ],
+)
+def test_ai_intervention_costs_reduce_divine_power(ai_action, expected_cost):
+    engine = DeterministicEngine()
+    human_result = engine.process_human_action("vote")
+    assert human_result["success"] is True
+
+    ai_result = engine.process_ai_intervention(ai_action)
+    assert ai_result["success"] is True
+    assert ai_result["state"]["ai_god"]["divine_power"] == 9 - expected_cost
+
+    logs = engine.get_logs(limit=20)
+    ai_log = next(log for log in logs if log["actor"] == "ai_god" and log["action"] == ai_action)
+    assert ai_log["details"]["divine_power_cost"] == expected_cost
+
+
+def test_overextension_sets_vulnerable_and_blocks_manifest_wrath():
+    engine = DeterministicEngine()
+    engine.ai.divine_power = 0
+
+    human_result = engine.process_human_action("vote")
+    assert human_result["success"] is True
+
+    ai_result = engine.process_ai_intervention("whisper_temptation")
+    assert ai_result["success"] is True
+    assert ai_result["state"]["ai_god"]["divine_power"] == -1
+    assert ai_result["state"]["vulnerable"] is True
+
+    logs = engine.get_logs(limit=30)
+    overextension_log = next(
+        log for log in logs if log["actor"] == "system" and log["action"] == "overextension"
+    )
+    assert overextension_log["details"]["vulnerable"] is True
+    assert overextension_log["details"]["divine_power"] == -1
+
+    next_human = engine.process_human_action("vote")
+    assert next_human["success"] is True
+    blocked = engine.process_ai_intervention("manifest_wrath")
+    assert blocked["success"] is False
+    assert blocked["error"] == "AI God is vulnerable and cannot use manifest_wrath"

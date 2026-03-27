@@ -1,0 +1,24 @@
+doctrine:
+  name: "Doctrine of the Eternal Watcher"
+  values:
+    - Order: 8
+    - Fear: 4
+  taboos:
+    - "Do not Manifest Wrath when Rebellion < 3"
+    - "Do not Withhold Grace when Faith < 3"
+  power_modifiers:
+    - name: "Divine Power Overextension"
+      threshold: -1
+      effect: "Human Rebellion gains +2 next turn; AI cannot use Manifest Wrath."
+    - name: "Authority Bloom"
+      threshold: 10
+      effect: "AI gains +1 Order automatically every Night phase."
+stats:
+  authority:
+    start: 6
+    min: 0
+    max: 12
+  divine_power:
+    start: 8
+    min: -2
+    max: 12
